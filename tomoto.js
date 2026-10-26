@@ -26,14 +26,16 @@ let remainingTomatoes = tomatoCountSetting;
 // 資料持久化 (localStorage)
 let coins = parseInt(localStorage.getItem('pomodoro_coins')) || 120;
 let tasks = JSON.parse(localStorage.getItem('pomodoro_tasks')) || [];
-let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [];
+let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [0]; 
 let activeTaskId = localStorage.getItem('pomodoro_active_task') || null;
+let currentActiveOutfit = localStorage.getItem('pomodoro_active_outfit') || 'dresstest';
 
 // 初始化渲染
 updateCoinDisplay();
 renderTasks();
 updateTimerDisplay();
 updateActiveTaskUI();
+changeOutfit(currentActiveOutfit);
 
 
 // ==========================================
@@ -45,7 +47,6 @@ function addCoins(amount) {
     updateCoinDisplay();
 }
 
-// 依據專注時間計算：每 5 分鐘 4 金幣，餘數算 1 金幣
 function calculateCoinsForWork(minutes) {
     if (minutes <= 0) return 1;
     const blocks = Math.floor(minutes / 5);
@@ -105,11 +106,9 @@ function runLoopTimer() {
             clearInterval(timerId);
 
             if (isWorkMode) {
-                // --- 專注時間結束 ---
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
                 addCoins(earnedCoins); 
                 
-                // 【核心功能】若有選定任務，將專注分鐘數累加至該任務
                 if (activeTaskId) {
                     tasks = tasks.map(task => {
                         if (task.id == activeTaskId) {
@@ -125,7 +124,6 @@ function runLoopTimer() {
                     updateTomatoDisplayUI();
                 }
 
-                // 無縫切換到休息模式
                 isWorkMode = false;
                 totalSeconds = breakTimeSetting * 60;
                 startBtn.innerText = "休息中...";
@@ -135,7 +133,6 @@ function runLoopTimer() {
                 runLoopTimer();
 
             } else {
-                // --- 休息時間結束 ---
                 if (remainingTomatoes > 0) {
                     isWorkMode = true;
                     totalSeconds = workTimeSetting * 60;
@@ -210,7 +207,7 @@ if (addTaskBtn) {
             id: Date.now(),
             text: taskText,
             completed: false,
-            accumulatedMinutes: 0 // 初始累積專注時間
+            accumulatedMinutes: 0 
         };
 
         tasks.push(newTask);
@@ -289,9 +286,12 @@ function updateActiveTaskUI() {
 
 
 // ==========================================
-// 5. 換裝商店與 SVG 聯動邏輯
+// 5. 換裝商店與 SVG 聯動邏輯 (含完整點擊與分類切換)
 // ==========================================
 function changeOutfit(targetOutfitId) {
+    currentActiveOutfit = targetOutfitId;
+    localStorage.setItem('pomodoro_active_outfit', targetOutfitId);
+
     const allOutfits = ['dresstest', 'dresstest2'];
     allOutfits.forEach(outfitId => {
         const outfitLayers = document.querySelectorAll(`[id="${outfitId}"]`);
@@ -305,6 +305,7 @@ function changeOutfit(targetOutfitId) {
     });
 }
 
+// 綁定換裝商店裡卡片的點擊事件
 document.querySelectorAll('.shop-item').forEach((item, index) => {
     const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
     item.addEventListener('click', () => {
@@ -325,6 +326,16 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
             alert('購買成功並已換上新衣服！🎉');
             item.style.borderColor = 'var(--primary)';
         }
+    });
+});
+
+// 換裝商店分類切換按鈕邏輯 (全部 / 髮型 / 服飾)
+const filterBtns = document.querySelectorAll('.filter-btn');
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // 可依需求擴充篩選邏輯
     });
 });
 
@@ -354,7 +365,7 @@ if (settingCards.length >= 3) {
             if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
-            breakTimeSetting++; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting++;
+            breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
         });
     }
 
