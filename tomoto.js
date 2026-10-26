@@ -315,7 +315,6 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
 
         if (unlockedItems.includes(index)) {
             changeOutfit(targetOutfit);
-            alert('已為您切換此服裝！');
             return;
         }
         
@@ -323,12 +322,10 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
             unlockedItems.push(index);
             localStorage.setItem('pomodoro_unlocked', JSON.stringify(unlockedItems));
             changeOutfit(targetOutfit);
-            alert('購買成功並已換上新衣服！🎉');
             item.style.borderColor = 'var(--primary)';
         }
     });
 });
-
 // 換裝商店分類切換按鈕邏輯 (全部 / 髮型 / 服飾)
 const filterBtns = document.querySelectorAll('.filter-btn');
 filterBtns.forEach(btn => {
