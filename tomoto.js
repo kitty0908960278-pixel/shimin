@@ -212,7 +212,7 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
 
 
 // ==========================================
-// 7. 計時設定面板調整邏輯 (+ / - 按鈕綁定)
+// 6. 計時設定面板調整邏輯 (+ / - 按鈕綁定)
 // ==========================================
 let workTimeSetting = 25;
 let breakTimeSetting = 5;
@@ -240,7 +240,7 @@ if (settingCards.length >= 3) {
             if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
-            breakTimeSetting++; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting++;
+            breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
         });
     }
 
