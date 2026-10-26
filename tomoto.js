@@ -212,3 +212,80 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
         }
     });
 });
+// ==========================================
+// 7. 計時設定面板調整邏輯 (專注、休息、番茄數 +/-)
+// ==========================================
+// 預設設定值
+let workTimeSetting = 25;
+let breakTimeSetting = 5;
+let tomatoCountSetting = 4;
+
+// 抓取設定面板上的數字顯示元素與按鈕
+const settingCards = document.querySelectorAll('.setting-card');
+
+if (settingCards.length >= 3) {
+    // 1. 專注時間設定
+    const workValueEl = settingCards[0].querySelector('.setting-value');
+    const workMinusBtn = settingCards[0].querySelector('.circle-btn:first-of-type');
+    const workPlusBtn = settingCards[0].querySelector('.circle-btn:last-of-type');
+
+    workMinusBtn.addEventListener('click', () => {
+        if (workTimeSetting > 1) {
+            workTimeSetting--;
+            workValueEl.innerText = workTimeSetting;
+        }
+    });
+
+    workPlusBtn.addEventListener('click', () => {
+        workTimeSetting++;
+        workValueEl.innerText = workTimeSetting;
+    });
+
+    // 2. 休息時間設定
+    const breakValueEl = settingCards[1].querySelector('.setting-value');
+    const breakMinusBtn = settingCards[1].querySelector('.circle-btn:first-of-type');
+    const breakPlusBtn = settingCards[1].querySelector('.circle-btn:last-of-type');
+
+    breakMinusBtn.addEventListener('click', () => {
+        if (breakTimeSetting > 1) {
+            breakTimeSetting--;
+            breakValueEl.innerText = breakTimeSetting;
+        }
+    });
+
+    breakPlusBtn.addEventListener('click', () => {
+        breakTimeSetting++;
+        breakValueEl.innerText = breakTimeSetting;
+    });
+
+    // 3. 番茄數設定
+    const tomatoValueEl = settingCards[2].querySelector('.setting-value');
+    const tomatoMinusBtn = settingCards[2].querySelector('.circle-btn:first-of-type');
+    const tomatoPlusBtn = settingCards[2].querySelector('.circle-btn:last-of-type');
+
+    tomatoMinusBtn.addEventListener('click', () => {
+        if (tomatoCountSetting > 1) {
+            tomatoCountSetting--;
+            tomatoValueEl.innerText = tomatoCountSetting;
+        }
+    });
+
+    tomatoPlusBtn.addEventListener('click', () => {
+        tomatoCountSetting++;
+        tomatoValueEl.innerText = tomatoCountSetting;
+    });
+
+    // 4. 點擊「套用設定」按鈕時，將畫面上的數字同步到真正的計時器中
+    const applyBtn = document.querySelector('.btn-apply');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            if (isRunning) {
+                alert('計時中無法更改設定，請先重置計時器！');
+                return;
+            }
+            totalSeconds = workTimeSetting * 60;
+            updateTimerDisplay();
+            alert(`設定已套用！專注時間已更新為 ${workTimeSetting} 分鐘。`);
+        });
+    }
+}
