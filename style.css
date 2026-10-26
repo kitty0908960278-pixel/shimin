@@ -158,3 +158,38 @@ body {
 .badge-name { color: var(--text-dark); font-size: 12px; font-weight: 700; }
 .locked-badge { opacity: 0.4; filter: grayscale(100%); }
 .locked-badge .badge-icon { background-color: var(--progress-bg); border: 1px solid #E7E5E4; color: var(--text-gray); }
+/* ================= 待辦清單補充樣式 ================= */
+.task-time-badge { 
+    font-family: 'Nunito', sans-serif; 
+    color: var(--text-muted); 
+    font-size: 15px; 
+    font-weight: 700; 
+    background: var(--bg-color); 
+    padding: 6px 14px; 
+    border-radius: 12px; 
+    margin-left: auto; /* 自動將時數與按鈕推向右側 */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-focus-btn { 
+    background-color: var(--primary-bg); 
+    color: var(--primary); 
+    border: 2px solid var(--primary-light); 
+    padding: 8px 16px; 
+    border-radius: 12px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-size: 14px; 
+    transition: all 0.2s; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    margin-left: 15px; /* 與時數徽章保持完美間距 */
+}
+
+.task-focus-btn:hover { 
+    background-color: var(--primary); 
+    color: #FFF; 
+}
