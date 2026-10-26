@@ -286,7 +286,7 @@ function updateActiveTaskUI() {
 
 
 // ==========================================
-// 5. 換裝商店與 SVG 聯動邏輯 (含完整點擊與分類切換)
+// 5. 換裝商店與 SVG 聯動邏輯 (無通知靜默切換)
 // ==========================================
 function changeOutfit(targetOutfitId) {
     currentActiveOutfit = targetOutfitId;
@@ -305,7 +305,7 @@ function changeOutfit(targetOutfitId) {
     });
 }
 
-// 綁定換裝商店裡卡片的點擊事件
+// 綁定換裝商店裡卡片的點擊事件 (已移除 alert 通知)
 document.querySelectorAll('.shop-item').forEach((item, index) => {
     const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
     item.addEventListener('click', () => {
@@ -326,6 +326,7 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
         }
     });
 });
+
 // 換裝商店分類切換按鈕邏輯 (全部 / 髮型 / 服飾)
 const filterBtns = document.querySelectorAll('.filter-btn');
 filterBtns.forEach(btn => {
@@ -359,7 +360,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
