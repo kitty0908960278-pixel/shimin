@@ -1,1 +1,1 @@
-# shimin
+# webdesign-pomodoro
