@@ -106,11 +106,10 @@ function runLoopTimer() {
 
             if (isWorkMode) {
                 // --- 專注時間結束 ---
-                // 1. 動態發放金幣（無彈窗，直接加到左側）
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
                 addCoins(earnedCoins); 
                 
-                // 2. 若有選定任務，將專注分鐘數累加至該任務
+                // 【核心功能】若有選定任務，將專注分鐘數累加至該任務
                 if (activeTaskId) {
                     tasks = tasks.map(task => {
                         if (task.id == activeTaskId) {
@@ -121,13 +120,12 @@ function runLoopTimer() {
                     saveAndRenderTasks();
                 }
 
-                // 3. 番茄數 -1
                 if (remainingTomatoes > 0) {
                     remainingTomatoes--;
                     updateTomatoDisplayUI();
                 }
 
-                // 4. 無縫切換到休息模式
+                // 無縫切換到休息模式
                 isWorkMode = false;
                 totalSeconds = breakTimeSetting * 60;
                 startBtn.innerText = "休息中...";
@@ -139,7 +137,6 @@ function runLoopTimer() {
             } else {
                 // --- 休息時間結束 ---
                 if (remainingTomatoes > 0) {
-                    // 無縫切換回專注模式
                     isWorkMode = true;
                     totalSeconds = workTimeSetting * 60;
                     startBtn.innerText = "專注計時中...";
@@ -148,7 +145,6 @@ function runLoopTimer() {
                     targetTime = Date.now() + totalSeconds * 1000;
                     runLoopTimer();
                 } else {
-                    // 所有輪數完成
                     isRunning = false;
                     startBtn.innerText = "開始";
                     isWorkMode = true;
@@ -214,7 +210,7 @@ if (addTaskBtn) {
             id: Date.now(),
             text: taskText,
             completed: false,
-            accumulatedMinutes: 0
+            accumulatedMinutes: 0 // 初始累積專注時間
         };
 
         tasks.push(newTask);
@@ -358,7 +354,7 @@ if (settingCards.length >= 3) {
             if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
-            breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
+            breakTimeSetting++; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting++;
         });
     }
 
