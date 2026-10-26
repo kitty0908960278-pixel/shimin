@@ -219,11 +219,36 @@ if (addTaskBtn) {
     });
 }
 
+// ==========================================
+// 4. 待辦清單管理與任務專注連結
+// ==========================================
+if (addTaskBtn) {
+    addTaskBtn.addEventListener('click', () => {
+        const taskText = taskInput.value.trim();
+        if (!taskText) {
+            alert('請輸入任務內容！');
+            return;
+        }
+
+        const newTask = {
+            id: Date.now(),
+            text: taskText,
+            completed: false,
+            accumulatedMinutes: 0 // 初始累積專注時間
+        };
+
+        tasks.push(newTask);
+        saveAndRenderTasks();
+        taskInput.value = '';
+    });
+}
+
 function saveAndRenderTasks() {
     localStorage.setItem('pomodoro_tasks', JSON.stringify(tasks));
     renderTasks();
 }
 
+// 這裡就是 renderTasks 函數的正確範圍 (大約在第 221 行開始)
 function renderTasks() {
     if (!taskList) return;
     taskList.innerHTML = '';
@@ -240,12 +265,16 @@ function renderTasks() {
                 <span class="checkmark"></span>
             </label>
             <span class="task-text" style="${task.completed ? 'text-decoration: line-through; color: #A8A29E;' : ''}">${task.text}</span>
-            <span class="task-time-badge"><i class="fa-solid fa-hourglass-half"></i> ${task.accumulatedMinutes || 0} 分</span>
-            <button class="task-focus-btn" onclick="selectActiveTask(${task.id}, '${task.text}')">
+            <span class="task-time-badge" style="margin-left: auto;"><i class="fa-solid fa-hourglass-half"></i> ${task.accumulatedMinutes || 0} 分</span>
+            <button class="task-focus-btn" onclick="selectActiveTask(${task.id}, '${task.text}')" style="margin-left: 15px;">
                 <i class="fa-solid fa-bullseye"></i> ${isActive ? '專注中' : '選擇專注'}
             </button>
-            <button onclick="deleteTask(${task.id})" style="margin-left: auto; background: none; border: none; color: #B48989; cursor: pointer; font-size: 16px;"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="deleteTask(${task.id})" style="margin-left: 15px; background: none; border: none; color: #B48989; cursor: pointer; font-size: 16px;"><i class="fa-solid fa-trash"></i></button>
         `;
+        taskList.appendChild(li);
+    });
+}
+        
         taskList.appendChild(li);
     });
 }
