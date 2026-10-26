@@ -7,7 +7,7 @@ const resetBtn = document.getElementById('reset-btn');
 const taskInput = document.getElementById('task-input');
 const addTaskBtn = document.getElementById('add-task-btn');
 const taskList = document.getElementById('task-list');
-const coinValueEls = document.querySelectorAll('.coin-value'); // 抓取畫面上的金幣顯示（可能有多處）
+const coinValueEls = document.querySelectorAll('.coin-value');
 
 // 計時器相關狀態
 let totalSeconds = 25 * 60; // 預設 25 分鐘
@@ -61,7 +61,6 @@ startBtn.addEventListener('click', () => {
     isRunning = true;
     startBtn.innerText = "計時中...";
 
-    // 記錄絕對結束時間點（解決切換分頁被瀏覽器暫停的問題）
     targetTime = Date.now() + totalSeconds * 1000;
 
     timerId = setInterval(() => {
@@ -72,18 +71,15 @@ startBtn.addEventListener('click', () => {
         if (totalSeconds > 0) {
             updateTimerDisplay();
         } else {
-            // 倒數結束！
             clearInterval(timerId);
             isRunning = false;
             startBtn.innerText = "開始";
             totalSeconds = 0;
             updateTimerDisplay();
 
-            // 獎勵機制：完成一次專注送 20 金幣
             addCoins(20);
             alert('恭喜完成 25 分鐘專注！獲得 20 金幣獎勵 🎉');
 
-            // 重置時間回 25 分鐘
             totalSeconds = 25 * 60;
             updateTimerDisplay();
         }
@@ -113,7 +109,7 @@ function updateTimerDisplay() {
 
 
 // ==========================================
-// 4. 待辦清單管理 (對應夥伴的 HTML ID)
+// 4. 待辦清單管理
 // ==========================================
 addTaskBtn.addEventListener('click', () => {
     const taskText = taskInput.value.trim();
@@ -169,35 +165,14 @@ window.deleteTask = function(id) {
 
 
 // ==========================================
-// 5. 換裝商店購買邏輯預留
-// ==========================================
-// 夥伴的 HTML 商店格子可以使用類似邏輯繫結點擊事件
-document.querySelectorAll('.shop-item').forEach((item, index) => {
-    item.addEventListener('click', () => {
-        const itemPrice = 50; // 假設每個道具 50 金幣
-        if (unlockedItems.includes(index)) {
-            alert('你已經擁有這個裝飾囉！');
-            return;
-        }
-        
-        if (deductCoins(itemPrice)) {
-            unlockedItems.push(index);
-            localStorage.setItem('pomodoro_unlocked', JSON.stringify(unlockedItems));
-            alert('購買成功！快去幫角色換上吧！');
-            item.style.borderColor = 'var(--primary)';
-            
-        }
-    });
-});
-// ==========================================
-// 6. 換裝系統邏輯 (SVG 紙娃切換)
+// 5. 換裝商店與 SVG 聯動邏輯
 // ==========================================
 function changeOutfit(targetOutfitId) {
     const allOutfits = ['dresstest', 'dresstest2'];
     
+    // 同步切換所有頁面上的 SVG 紙娃衣服圖層
     allOutfits.forEach(outfitId => {
         const outfitLayers = document.querySelectorAll(`[id="${outfitId}"]`);
-        
         outfitLayers.forEach(layer => {
             if (outfitId === targetOutfitId) {
                 layer.style.display = 'block';
@@ -207,3 +182,33 @@ function changeOutfit(targetOutfitId) {
         });
     });
 }
+
+// 商店點擊購買與穿上聯動
+document.querySelectorAll('.shop-item').forEach((item, index) => {
+    // 假設第 0 個格子是藍色連身裙，第 1 個格子是橘色洋裝
+    const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
+
+    item.addEventListener('click', () => {
+        // 如果這個格子沒有對應的衣服，就不做特別處理
+        if (!outfitMap[index]) return;
+
+        const itemPrice = 50; // 每個道具 50 金幣
+        const targetOutfit = outfitMap[index];
+
+        // 如果已經擁有，直接換裝
+        if (unlockedItems.includes(index)) {
+            changeOutfit(targetOutfit);
+            alert('已為您切換此服裝！');
+            return;
+        }
+        
+        // 如果還沒擁有，進行扣款購買
+        if (deductCoins(itemPrice)) {
+            unlockedItems.push(index);
+            localStorage.setItem('pomodoro_unlocked', JSON.stringify(unlockedItems));
+            changeOutfit(targetOutfit);
+            alert('購買成功並已換上新衣服！🎉');
+            item.style.borderColor = 'var(--primary)';
+        }
+    });
+});
