@@ -8,34 +8,36 @@ const taskInput = document.getElementById('task-input');
 const addTaskBtn = document.getElementById('add-task-btn');
 const taskList = document.getElementById('task-list');
 const coinValueEls = document.querySelectorAll('.coin-value');
+const activeTaskNameEl = document.getElementById('active-task-name');
 
 // 計時器與番茄鐘循環狀態 (預設值)
 let workTimeSetting = 25;   
 let breakTimeSetting = 5;   
 let tomatoCountSetting = 4; 
 
-let totalSeconds = workTimeSetting * 60; // 當前倒數秒數
+let totalSeconds = workTimeSetting * 60; 
 let timerId = null;
 let isRunning = false;
 let targetTime = null;
 
-// 循環狀態管理
-let isWorkMode = true; // true = 專注模式, false = 休息模式
-let remainingTomatoes = tomatoCountSetting; // 剩餘要跑的番茄數
+let isWorkMode = true; 
+let remainingTomatoes = tomatoCountSetting; 
 
 // 資料持久化 (localStorage)
 let coins = parseInt(localStorage.getItem('pomodoro_coins')) || 120;
 let tasks = JSON.parse(localStorage.getItem('pomodoro_tasks')) || [];
 let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [];
+let activeTaskId = localStorage.getItem('pomodoro_active_task') || null;
 
 // 初始化渲染
 updateCoinDisplay();
 renderTasks();
 updateTimerDisplay();
+updateActiveTaskUI();
 
 
 // ==========================================
-// 2. 金幣系統管理與動態計算
+// 2. 動態金幣計算管理
 // ==========================================
 function addCoins(amount) {
     coins += amount;
@@ -43,7 +45,7 @@ function addCoins(amount) {
     updateCoinDisplay();
 }
 
-// 依據你要求的規則計算金幣：每 5 分鐘 4 個金幣，不足 5 分鐘的餘數算 1 個金幣
+// 依據專注時間計算：每 5 分鐘 4 金幣，餘數算 1 金幣
 function calculateCoinsForWork(minutes) {
     if (minutes <= 0) return 1;
     const blocks = Math.floor(minutes / 5);
@@ -71,7 +73,7 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 全自動循環計時核心邏輯 (完全無彈窗、金幣動態發放)
+// 3. 全自動循環計時與任務累計時間核心
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
@@ -91,7 +93,6 @@ if (startBtn) {
     });
 }
 
-// 統一的循環計時引擎（專注 ⇄ 休息無縫自動切換，無彈窗）
 function runLoopTimer() {
     timerId = setInterval(() => {
         const now = Date.now();
@@ -101,45 +102,53 @@ function runLoopTimer() {
         if (totalSeconds > 0) {
             updateTimerDisplay();
         } else {
-            // 時間歸零！
             clearInterval(timerId);
 
             if (isWorkMode) {
                 // --- 專注時間結束 ---
-                // 1. 根據你設定的專注分鐘數計算對應金幣（例如 1 分鐘 = 1 金幣）
+                // 1. 動態發放金幣（無彈窗，直接加到左側）
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
-                addCoins(earnedCoins); // 直接加到左側金幣，不跳彈窗
+                addCoins(earnedCoins); 
                 
-                // 2. 番茄數 -1
+                // 2. 若有選定任務，將專注分鐘數累加至該任務
+                if (activeTaskId) {
+                    tasks = tasks.map(task => {
+                        if (task.id == activeTaskId) {
+                            return { ...task, accumulatedMinutes: (task.accumulatedMinutes || 0) + workTimeSetting };
+                        }
+                        return task;
+                    });
+                    saveAndRenderTasks();
+                }
+
+                // 3. 番茄數 -1
                 if (remainingTomatoes > 0) {
                     remainingTomatoes--;
                     updateTomatoDisplayUI();
                 }
 
-                // 3. 直接無縫切換到休息模式
+                // 4. 無縫切換到休息模式
                 isWorkMode = false;
                 totalSeconds = breakTimeSetting * 60;
                 startBtn.innerText = "休息中...";
                 updateTimerDisplay();
 
-                // 立即設定休息結束的時間點並繼續倒數
                 targetTime = Date.now() + totalSeconds * 1000;
                 runLoopTimer();
 
             } else {
                 // --- 休息時間結束 ---
                 if (remainingTomatoes > 0) {
-                    // 直接無縫切換回專注模式
+                    // 無縫切換回專注模式
                     isWorkMode = true;
                     totalSeconds = workTimeSetting * 60;
                     startBtn.innerText = "專注計時中...";
                     updateTimerDisplay();
 
-                    // 立即設定專注結束的時間點並繼續倒數
                     targetTime = Date.now() + totalSeconds * 1000;
                     runLoopTimer();
                 } else {
-                    // 所有番茄輪數跑完
+                    // 所有輪數完成
                     isRunning = false;
                     startBtn.innerText = "開始";
                     isWorkMode = true;
@@ -191,7 +200,7 @@ function updateTomatoDisplayUI() {
 
 
 // ==========================================
-// 4. 待辦清單管理
+// 4. 待辦清單管理與任務專注連結
 // ==========================================
 if (addTaskBtn) {
     addTaskBtn.addEventListener('click', () => {
@@ -204,7 +213,8 @@ if (addTaskBtn) {
         const newTask = {
             id: Date.now(),
             text: taskText,
-            completed: false
+            completed: false,
+            accumulatedMinutes: 0
         };
 
         tasks.push(newTask);
@@ -223,14 +233,21 @@ function renderTasks() {
     taskList.innerHTML = '';
     
     tasks.forEach(task => {
+        const isActive = task.id == activeTaskId;
         const li = document.createElement('li');
         li.className = 'todo-card';
+        li.style.border = isActive ? '2px solid var(--primary)' : 'none';
+        
         li.innerHTML = `
             <label class="custom-checkbox">
                 <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTask(${task.id})">
                 <span class="checkmark"></span>
             </label>
             <span class="task-text" style="${task.completed ? 'text-decoration: line-through; color: #A8A29E;' : ''}">${task.text}</span>
+            <span class="task-time-badge"><i class="fa-solid fa-hourglass-half"></i> ${task.accumulatedMinutes || 0} 分</span>
+            <button class="task-focus-btn" onclick="selectActiveTask(${task.id}, '${task.text}')">
+                <i class="fa-solid fa-bullseye"></i> ${isActive ? '專注中' : '選擇專注'}
+            </button>
             <button onclick="deleteTask(${task.id})" style="margin-left: auto; background: none; border: none; color: #B48989; cursor: pointer; font-size: 16px;"><i class="fa-solid fa-trash"></i></button>
         `;
         taskList.appendChild(li);
@@ -244,8 +261,35 @@ window.toggleTask = function(id) {
 
 window.deleteTask = function(id) {
     tasks = tasks.filter(task => task.id !== id);
+    if (activeTaskId == id) {
+        activeTaskId = null;
+        localStorage.removeItem('pomodoro_active_task');
+        updateActiveTaskUI();
+    }
     saveAndRenderTasks();
 };
+
+window.selectActiveTask = function(id, text) {
+    activeTaskId = id;
+    localStorage.setItem('pomodoro_active_task', activeTaskId);
+    updateActiveTaskUI();
+    renderTasks();
+    alert(`已鎖定專注任務：「${text}」！`);
+};
+
+function updateActiveTaskUI() {
+    if (!activeTaskNameEl) return;
+    if (!activeTaskId) {
+        activeTaskNameEl.innerText = "尚未選擇任務 (點擊待辦清單設定)";
+        return;
+    }
+    const currentTask = tasks.find(t => t.id == activeTaskId);
+    if (currentTask) {
+        activeTaskNameEl.innerText = currentTask.text;
+    } else {
+        activeTaskNameEl.innerText = "尚未選擇任務";
+    }
+}
 
 
 // ==========================================
@@ -336,7 +380,6 @@ if (settingCards.length >= 3) {
     }
 }
 
-// 套用設定按鈕
 const applyBtn = document.querySelector('.btn-apply');
 if (applyBtn) {
     applyBtn.addEventListener('click', () => {
@@ -348,6 +391,6 @@ if (applyBtn) {
         remainingTomatoes = tomatoCountSetting;
         isWorkMode = true;
         updateTimerDisplay();
-        alert(`設定已套用！\n專注時間：${workTimeSetting} 分鐘\n休息時間：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
+        alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
     });
 }
