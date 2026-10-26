@@ -35,12 +35,21 @@ updateTimerDisplay();
 
 
 // ==========================================
-// 2. 金幣系統管理
+// 2. 金幣系統管理與動態計算
 // ==========================================
 function addCoins(amount) {
     coins += amount;
     localStorage.setItem('pomodoro_coins', coins);
     updateCoinDisplay();
+}
+
+// 依據專注分鐘數計算金幣：每 5 分鐘 4 金幣，餘數算 1 金幣
+function calculateCoinsForWork(minutes) {
+    if (minutes <= 0) return 1;
+    const blocks = Math.floor(minutes / 5);
+    const remainder = minutes % 5;
+    let earned = blocks * 4 + (remainder > 0 ? 1 : 0);
+    return Math.max(earned, 1); // 至少給 1 金幣
 }
 
 function deductCoins(amount) {
@@ -62,13 +71,12 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 自動循環計時核心邏輯 (專注 ⇄ 休息 ⇄ 扣番茄數)
+// 3. 自動循環計時核心邏輯 (無彈窗、自動串接)
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
         if (isRunning) return;
         
-        // 如果番茄數已經歸零，重新開始前先重置
         if (remainingTomatoes <= 0) {
             remainingTomatoes = tomatoCountSetting;
             isWorkMode = true;
@@ -76,7 +84,7 @@ if (startBtn) {
         }
 
         isRunning = true;
-        startBtn.innerText = isWorkMode ? "計時中..." : "休息中...";
+        startBtn.innerText = isWorkMode ? "專注計時中..." : "休息中...";
 
         targetTime = Date.now() + totalSeconds * 1000;
 
@@ -94,40 +102,38 @@ if (startBtn) {
 
                 if (isWorkMode) {
                     // --- 專注時間結束 ---
-                    addCoins(20); // 賺取 20 金幣
+                    // 1. 動態計算金幣並直接加入左側顯示，不跳提示框
+                    const earnedCoins = calculateCoinsForWork(workTimeSetting);
+                    addCoins(earnedCoins);
                     
-                    // 番茄數 -1 (同步更新畫面上的設定顯示)
+                    // 2. 番茄數 -1
                     if (remainingTomatoes > 0) {
                         remainingTomatoes--;
                         updateTomatoDisplayUI();
                     }
 
-                    alert(`恭喜完成專注！獲得 20 金幣 🎉\n接下來自動進入 ${breakTimeSetting} 分鐘休息時間！`);
-
-                    // 切換成休息模式並自動啟動休息倒數
+                    // 3. 直接無縫切換成休息模式並開始倒數
                     isWorkMode = false;
                     totalSeconds = breakTimeSetting * 60;
                     startBtn.innerText = "休息中...";
                     updateTimerDisplay();
 
-                    // 自動觸發休息倒數
                     targetTime = Date.now() + totalSeconds * 1000;
                     runAutoTimer();
 
                 } else {
                     // --- 休息時間結束 ---
                     if (remainingTomatoes > 0) {
-                        alert('休息時間結束！自動進入下一輪專注 💪');
+                        // 直接無縫切換回專注模式並開始倒數
                         isWorkMode = true;
                         totalSeconds = workTimeSetting * 60;
-                        startBtn.innerText = "計時中...";
+                        startBtn.innerText = "專注計時中...";
                         updateTimerDisplay();
 
-                        // 自動觸發下一輪專注倒數
                         targetTime = Date.now() + totalSeconds * 1000;
                         runAutoTimer();
                     } else {
-                        // 所有番茄輪數跑完了！
+                        // 所有輪數完成
                         alert('太棒了！今日設定的番茄鐘循環全部完成了！🎊');
                         startBtn.innerText = "開始";
                         isWorkMode = true;
@@ -142,7 +148,7 @@ if (startBtn) {
     });
 }
 
-// 內部專用：自動串接下一階段倒數的輔助函式
+// 內部專用：自動串接循環計時的輔助函式（無彈窗）
 function runAutoTimer() {
     isRunning = true;
     timerId = setInterval(() => {
@@ -157,12 +163,13 @@ function runAutoTimer() {
             isRunning = false;
 
             if (isWorkMode) {
-                addCoins(20);
+                const earnedCoins = calculateCoinsForWork(workTimeSetting);
+                addCoins(earnedCoins);
                 if (remainingTomatoes > 0) {
                     remainingTomatoes--;
                     updateTomatoDisplayUI();
                 }
-                alert(`恭喜完成專注！獲得 20 金幣 🎉\n自動進入 ${breakTimeSetting} 分鐘休息！`);
+
                 isWorkMode = false;
                 totalSeconds = breakTimeSetting * 60;
                 startBtn.innerText = "休息中...";
@@ -171,10 +178,9 @@ function runAutoTimer() {
                 runAutoTimer();
             } else {
                 if (remainingTomatoes > 0) {
-                    alert('休息時間結束！自動進入下一輪專注 💪');
                     isWorkMode = true;
                     totalSeconds = workTimeSetting * 60;
-                    startBtn.innerText = "計時中...";
+                    startBtn.innerText = "專注計時中...";
                     updateTimerDisplay();
                     targetTime = Date.now() + totalSeconds * 1000;
                     runAutoTimer();
@@ -331,42 +337,33 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
 // ==========================================
 // 6. 計時設定面板調整邏輯 (+ / - 按鈕綁定)
 // ==========================================
+let workValueEl, breakValueEl, tomatoValueEl;
+
 const settingCards = document.querySelectorAll('.setting-card');
 if (settingCards.length >= 3) {
-    // 1. 專注時間設定
-    const workValueEl = settingCards[0].querySelector('.setting-value');
+    workValueEl = settingCards[0].querySelector('.setting-value');
     const workBtns = settingCards[0].querySelectorAll('.circle-btn');
     if (workBtns.length >= 2) {
         workBtns[0].addEventListener('click', () => {
-            if (workTimeSetting > 1) { 
-                workTimeSetting--; 
-                workValueEl.innerText = workTimeSetting; 
-            }
+            if (workTimeSetting > 1) { workTimeSetting--; workValueEl.innerText = workTimeSetting; }
         });
         workBtns[1].addEventListener('click', () => {
-            workTimeSetting++; 
-            workValueEl.innerText = workTimeSetting; 
+            workTimeSetting++; workValueEl.innerText = workTimeSetting;
         });
     }
 
-    // 2. 休息時間設定
-    const breakValueEl = settingCards[1].querySelector('.setting-value');
+    breakValueEl = settingCards[1].querySelector('.setting-value');
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { 
-                breakTimeSetting--; 
-                breakValueEl.innerText = breakTimeSetting; 
-            }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
-            breakTimeSetting++; 
-            breakValueEl.innerText = breakTimeSetting; 
+            breakTimeSetting++; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting++;
         });
     }
 
-    // 3. 番茄數設定
-    const tomatoValueEl = settingCards[2].querySelector('.setting-value');
+    tomatoValueEl = settingCards[2].querySelector('.setting-value');
     const tomatoBtns = settingCards[2].querySelectorAll('.circle-btn');
     if (tomatoBtns.length >= 2) {
         tomatoBtns[0].addEventListener('click', () => {
@@ -384,7 +381,7 @@ if (settingCards.length >= 3) {
     }
 }
 
-// 4. 套用設定按鈕 (修復：精準抓取變數並鎖定倒數時間)
+// 套用設定按鈕
 const applyBtn = document.querySelector('.btn-apply');
 if (applyBtn) {
     applyBtn.addEventListener('click', () => {
@@ -392,11 +389,10 @@ if (applyBtn) {
             alert('計時中無法更改設定，請先重置計時器！');
             return;
         }
-        // 將使用者在畫面上調整的數值，正式寫入計時變數中
         totalSeconds = workTimeSetting * 60;
         remainingTomatoes = tomatoCountSetting;
         isWorkMode = true;
         updateTimerDisplay();
-        alert(`設定已成功套用！\n專注時間：${workTimeSetting} 分鐘\n休息時間：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
+        alert(`設定已套用！\n專注時間：${workTimeSetting} 分鐘\n休息時間：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
     });
 }
