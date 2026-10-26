@@ -43,7 +43,7 @@ function addCoins(amount) {
     updateCoinDisplay();
 }
 
-// 依據專注分鐘數計算金幣：每 5 分鐘 4 金幣，餘數算 1 金幣
+// 依據你要求的規則計算金幣：每 5 分鐘 4 個金幣，不足 5 分鐘的餘數算 1 個金幣
 function calculateCoinsForWork(minutes) {
     if (minutes <= 0) return 1;
     const blocks = Math.floor(minutes / 5);
@@ -71,7 +71,7 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 全自動循環計時核心邏輯 (完全無彈窗干擾)
+// 3. 全自動循環計時核心邏輯 (完全無彈窗、金幣動態發放)
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
@@ -91,7 +91,7 @@ if (startBtn) {
     });
 }
 
-// 統一的循環計時引擎（專注 ⇄ 休息無縫自動切換，不使用 alert）
+// 統一的循環計時引擎（專注 ⇄ 休息無縫自動切換，無彈窗）
 function runLoopTimer() {
     timerId = setInterval(() => {
         const now = Date.now();
@@ -106,15 +106,17 @@ function runLoopTimer() {
 
             if (isWorkMode) {
                 // --- 專注時間結束 ---
+                // 1. 根據你設定的專注分鐘數計算對應金幣（例如 1 分鐘 = 1 金幣）
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
-                addCoins(earnedCoins); // 自動加金幣到左側，不跳提示框
+                addCoins(earnedCoins); // 直接加到左側金幣，不跳彈窗
                 
+                // 2. 番茄數 -1
                 if (remainingTomatoes > 0) {
                     remainingTomatoes--;
                     updateTomatoDisplayUI();
                 }
 
-                // 直接無縫切換到休息模式
+                // 3. 直接無縫切換到休息模式
                 isWorkMode = false;
                 totalSeconds = breakTimeSetting * 60;
                 startBtn.innerText = "休息中...";
