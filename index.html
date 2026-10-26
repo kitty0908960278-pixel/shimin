@@ -186,4 +186,99 @@
                             <path class="st2" d="M215.56,546.76v121.92c40.32,26.88,80.64,53.76,120.96,80.64l-60.48,120.96c37.21,20.37,108.8,53.1,204.48,57.6,111.19,5.23,195.48-30.47,234.24-49.92-17.92-40.96-35.84-81.92-53.76-122.88,37.37-25.6,74.75-51.2,112.12-76.8v-117.12c-91.13,14.08-182.27,28.16-273.4,42.24"/>
                           </g>
                           <g id="dresstest2" style="display: none;">
-                            <polyline class="st0" points
+                            <polyline class="st0" points="349.96 591.88 349.96 743.28 257.8 846.96 308.08 889.2 674.44 889.2 714.76 846.96 645.02 770.23 640.64 591.88 500 651.12"/>
+                          </g>
+                          <g id="hairasset">
+                            <path class="st3" d="M343.2,273.35l-33.3-22.09-31.3,24.84c-10.19,8.09-24.78-1.59-21.29-14.12l10.72-38.5-33.3-22.09c-10.84-7.19-6.15-24.06,6.85-24.61l39.92-1.7,10.72-38.5c3.49-12.54,20.98-13.28,25.53-1.09l13.96,37.44l39.92-1.7c13-.55,19.11,15.85,8.92,23.94l-31.3,24.84,13.96,37.44c4.54,12.19-9.17,23.08-20.01,15.88Z"/>
+                          </g>
+                        </svg>
+                    </div>
+                    <button class="btn btn-primary btn-save">儲存</button>
+                </div>
+                <div class="shop-panel">
+                    <div class="shop-header">
+                        <h2 class="section-title">換裝商店</h2>
+                        <div class="filter-toggle">
+                            <button class="filter-btn active">全部</button>
+                            <button class="filter-btn">髮型</button>
+                            <button class="filter-btn">服飾</button>
+                        </div>
+                    </div>
+                   <div class="shop-grid">
+                        <div class="shop-item" onclick="changeOutfit('dresstest')" style="display: flex; justify-content: center; align-items: center; font-size: 16px; color: var(--primary); font-weight: bold; cursor: pointer;">
+                            藍色連身裙
+                        </div>
+                        <div class="shop-item" onclick="changeOutfit('dresstest2')" style="display: flex; justify-content: center; align-items: center; font-size: 16px; color: var(--primary); font-weight: bold; cursor: pointer;">
+                            橘色洋裝
+                        </div>
+                        <div class="shop-item"></div>
+                        <div class="shop-item"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 頁面 4：我的成就 -->
+            <div id="page-achievements" class="page-section">
+                <div class="achievements-wrapper">
+                    <h2 class="section-title">我的成就</h2>
+                    <div class="achievements-top-row">
+                        <div class="achievement-card">
+                            <div class="level-header">
+                                <div class="level-icon"><i class="fa-solid fa-cat"></i></div>
+                                <div class="level-info">
+                                    <div class="level-title-row">
+                                        <span class="level-title">Lv. 12</span>
+                                        <span class="level-tag">專注達人</span>
+                                    </div>
+                                    <span class="level-subtitle">已累計專注 48 小時</span>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-track"><div class="progress-fill" style="width: 85%;"></div></div>
+                                <span class="progress-text">850 / 1000 EXP</span>
+                            </div>
+                        </div>
+                        <div class="achievement-card">
+                            <div class="collection-header">
+                                <span class="collection-title">配件收集度</span>
+                                <span class="collection-count">5<span class="collection-total">/15</span></span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-track"><div class="progress-fill" style="width: 33%;"><span class="progress-percent">33%</span></div></div>
+                            </div>
+                            <div class="collection-icons">
+                                <div class="collection-icon locked"><i class="fa-solid fa-glasses"></i></div>
+                                <div class="collection-icon locked"><i class="fa-solid fa-hat-wizard"></i></div>
+                                <div class="collection-icon active"><i class="fa-solid fa-shirt"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="achievement-card badges-card">
+                        <h3 class="badges-title">成就徽章</h3>
+                        <div class="badges-grid">
+                            <div class="badge-item"><div class="badge-icon unlocked"><i class="fa-solid fa-seedling"></i></div><span class="badge-name">第一顆番茄</span></div>
+                            <div class="badge-item"><div class="badge-icon unlocked"><i class="fa-solid fa-fire"></i></div><span class="badge-name">連續7天</span></div>
+                            <div class="badge-item"><div class="badge-icon unlocked"><i class="fa-solid fa-bag-shopping"></i></div><span class="badge-name">購物狂</span></div>
+                            <div class="badge-item locked-badge"><div class="badge-icon"><i class="fa-solid fa-moon"></i></div><span class="badge-name">夜貓子</span></div>
+                            <div class="badge-item locked-badge"><div class="badge-icon"><i class="fa-solid fa-gem"></i></div><span class="badge-name">全圖鑑收集</span></div>
+                            <div class="badge-item locked-badge"><div class="badge-icon"><i class="fa-solid fa-trophy"></i></div><span class="badge-name">專注100時</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        function switchPage(pageId, event) {
+            event.preventDefault();
+            document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+    <script src="tomoto.js"></script>
+</body>
+</html>
