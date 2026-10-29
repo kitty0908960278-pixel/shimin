@@ -399,3 +399,18 @@ if (applyBtn) {
         alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
     });
 }
+// 1. 建立一個 Audio 物件，對應你剛剛放進資料夾的音效檔名稱
+const alarmSound = new Audio('alarm.mp3'); 
+
+// 2. 當你的計時器倒數結束、歸零的判斷式裡面：
+if (timeLeft === 0) {
+    clearInterval(timerInterval); // 清除定時器
+    
+    // 播放鈴聲
+    alarmSound.play().catch(error => {
+        console.log("播放音效失敗：", error);
+    });
+
+    // 這裡可以放你原本倒數結束後要執行的其他程式碼（例如跳出提示、加金幣等）
+    alert("時間到！專注完成！");
+}
