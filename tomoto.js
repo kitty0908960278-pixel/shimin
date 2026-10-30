@@ -393,20 +393,20 @@ if (settingCards.length >= 3) {
 }
 
 const applyBtn = document.querySelector('.btn-apply');
-if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-        if (isRunning) {
-            alert('計時中無法更改設定，請先重置計時器！');
-            return;
-        }
-        totalSeconds = workTimeSetting * 60;
-        remainingTomatoes = tomatoCountSetting;
-        isWorkMode = true;
-        updateTimerDisplay();
-        alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
-    });
-}
-} // 👈 這裡補上原本少括起來的結尾括號
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            if (isRunning) {
+                alert('計時中無法更改設定，請先重置計時器！');
+                return;
+            }
+            totalSeconds = workTimeSetting * 60;
+            remainingTomatoes = tomatoCountSetting;
+            isWorkMode = true;
+            updateTimerDisplay();
+            alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
+        });
+    }
+} // 這是原本第 6 部分的結尾括號，保留這一個就好！
 
 // ==========================================
 // 7. 關閉鈴聲按鈕控制
