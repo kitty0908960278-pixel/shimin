@@ -406,4 +406,17 @@ if (applyBtn) {
         alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
     });
 }
+// ==========================================
+// 7. 關閉鈴聲按鈕控制
+// ==========================================
+const stopAlarmBtn = document.getElementById('stop-alarm-btn');
+if (stopAlarmBtn) {
+    stopAlarmBtn.addEventListener('click', () => {
+        const alarmSound = document.getElementById('alarm-audio');
+        if (alarmSound) {
+            alarmSound.pause();      // 暫停音樂播放
+            alarmSound.currentTime = 0; // 將音樂進度歸零
+        }
+    });
+}
 
