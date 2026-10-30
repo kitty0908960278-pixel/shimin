@@ -406,7 +406,7 @@ const applyBtn = document.querySelector('.btn-apply');
             alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
         });
     }
-} // 這是原本第 6 部分的結尾括號，保留這一個就好！
+
 
 // ==========================================
 // 7. 關閉鈴聲按鈕控制
