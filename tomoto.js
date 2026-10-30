@@ -9,8 +9,7 @@ const addTaskBtn = document.getElementById('add-task-btn');
 const taskList = document.getElementById('task-list');
 const coinValueEls = document.querySelectorAll('.coin-value');
 const activeTaskNameEl = document.getElementById('active-task-name');
-// 建立音效物件
-const alarmSound = new Audio('alarm.mp3');
+
 // 計時器與番茄鐘循環狀態 (預設值)
 let workTimeSetting = 25;   
 let breakTimeSetting = 5;   
@@ -105,10 +104,13 @@ function runLoopTimer() {
             updateTimerDisplay();
         } else {
             clearInterval(timerId);
-            // 倒數歸零時播放鈴聲
+           const alarmSound = document.getElementById('alarm-audio');
+        if (alarmSound) {
+            alarmSound.currentTime = 0; // 讓音樂從頭開始播
             alarmSound.play().catch(error => {
                 console.log("播放失敗原因：", error);
             });
+        }
 
             if (isWorkMode) {
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
