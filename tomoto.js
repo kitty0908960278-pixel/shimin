@@ -9,7 +9,8 @@ const addTaskBtn = document.getElementById('add-task-btn');
 const taskList = document.getElementById('task-list');
 const coinValueEls = document.querySelectorAll('.coin-value');
 const activeTaskNameEl = document.getElementById('active-task-name');
-
+// 建立音效物件
+const alarmSound = new Audio('alarm.mp3');
 // 計時器與番茄鐘循環狀態 (預設值)
 let workTimeSetting = 25;   
 let breakTimeSetting = 5;   
@@ -104,6 +105,10 @@ function runLoopTimer() {
             updateTimerDisplay();
         } else {
             clearInterval(timerId);
+            // 倒數歸零時播放鈴聲
+            alarmSound.play().catch(error => {
+                console.log("播放失敗原因：", error);
+            });
 
             if (isWorkMode) {
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
@@ -399,15 +404,4 @@ if (applyBtn) {
         alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
     });
 }
-// 在全域或函式外先建立一次 Audio 物件
-const alarmSound = new Audio('alarm.mp3');
 
-// 當倒數歸零時：
-if (timeLeft === 0) {
-    clearInterval(timerInterval); // 清除定時器
-    
-    // 播放音效並捕捉可能發生的錯誤
-    alarmSound.play().catch(error => {
-        console.log("播放失敗原因：", error);
-    });
-}
