@@ -79,12 +79,19 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 全自動循環計時與任務累計時間核心
+// 3. 全自動循環計時、暫停與任務累計時間核心 (已修復暫停按鈕邏輯)
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
-        if (isRunning) return;
-        
+        // 如果目前正在計時中，點擊代表要「暫停」
+        if (isRunning) {
+            clearInterval(timerId); // 清除計時器
+            isRunning = false;
+            startBtn.innerText = isWorkMode ? "繼續專注" : "繼續休息";
+            return;
+        }
+
+        // 如果目前是暫停或尚未開始，點擊代表要「開始/繼續」
         if (remainingTomatoes <= 0) {
             remainingTomatoes = tomatoCountSetting;
             isWorkMode = true;
@@ -92,7 +99,7 @@ if (startBtn) {
         }
 
         isRunning = true;
-        startBtn.innerText = isWorkMode ? "專注計時中..." : "休息中...";
+        startBtn.innerText = "暫停"; // 計時中顯示「暫停」
 
         targetTime = Date.now() + totalSeconds * 1000;
         runLoopTimer();
@@ -151,7 +158,7 @@ function runLoopTimer() {
                 if (remainingTomatoes > 0) {
                     isWorkMode = true;
                     totalSeconds = workTimeSetting * 60;
-                    startBtn.innerText = "暫停";
+                    startBtn.innerText = "專注計時中...";
                     updateTimerDisplay();
 
                     targetTime = Date.now() + totalSeconds * 1000;
@@ -301,7 +308,7 @@ function updateActiveTaskUI() {
 
 
 // ==========================================
-// 5. 換裝商店與 SVG 聯動邏輯
+// 5. 換裝商店與 SVG 聯動邏輯 (每次點擊扣 10 金幣)
 // ==========================================
 function changeOutfit(targetOutfitId) {
     currentActiveOutfit = targetOutfitId;
@@ -324,19 +331,11 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
     const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
     item.addEventListener('click', () => {
         if (!outfitMap[index]) return;
-        const itemPrice = 50;
+        const itemPrice = 10; // 每次扣 10 金幣
         const targetOutfit = outfitMap[index];
 
-        if (unlockedItems.includes(index)) {
-            changeOutfit(targetOutfit);
-            return;
-        }
-        
         if (deductCoins(itemPrice)) {
-            unlockedItems.push(index);
-            localStorage.setItem('pomodoro_unlocked', JSON.stringify(unlockedItems));
             changeOutfit(targetOutfit);
-            item.style.borderColor = 'var(--primary)';
         }
     });
 });
@@ -372,7 +371,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakValueEl;
@@ -439,8 +438,9 @@ if (soundBtn) {
     });
 }
 
+
 // ==========================================
-// 頁面切換功能
+// 8. 頁面切換功能
 // ==========================================
 window.switchPage = function(pageId, event) {
     if (event) event.preventDefault();
@@ -465,7 +465,7 @@ window.switchPage = function(pageId, event) {
 
 
 // ==========================================
-// 8. 收成紀錄 (最後一頁) 邏輯與番茄 SVG 產生器
+// 9. 收成紀錄與番茄 SVG 產生器 (夥伴寫的熱力圖 UI)
 // ==========================================
 function getTomatoSVG(isFilled, extraClass = "") {
     if (isFilled) {
@@ -484,86 +484,67 @@ function getTomatoSVG(isFilled, extraClass = "") {
     }
 }
 
+function updateSketchAchievementsUI() {
+    const mockTodayData = {
+        totalHours: 4.1,
+        subjects: [
+            { name: '經濟學期中複習', accumulatedMinutes: 138 }, 
+            { name: 'Java 程式設計', accumulatedMinutes: 78 },  
+            { name: '英文單字背誦', accumulatedMinutes: 30 }    
+        ]
+    };
 
-    /* 
-      ======================================================================
-      【 📌 關於假資料的說明與修改指引 】
-      目前此區塊（updateSketchAchievementsUI）為了讓畫面呈現豐富的 UI 樣貌，
-      使用了一部分「模擬假資料」（mockTodayData, mockStreakData, mockLevels）。
-      
-      若未來要完全拔除假資料、改抓取真實的 localStorage 數據：
-      1. 請將 mockTodayData 改為從上方全域變數 `tasks` 中過濾出「今天完成」的任務與累計分鐘數。
-      2. 請將 mockStreakData 替換為比對真實日期的 7 天打卡記錄陣列。
-      3. 請將 mockLevels 替換為從 localStorage 讀取過去 35 天每日專注總時數所對應的色階等級。
-      ======================================================================
-    */
+    const totalTimeEl = document.getElementById('today-time-val');
+    if (totalTimeEl) totalTimeEl.innerText = mockTodayData.totalHours;
 
-      function updateSketchAchievementsUI() {
-        // 1. 左側：今日總時數與各科明細
-        const mockTodayData = {
-            totalHours: 4.1,
-            subjects: [
-                { name: '經濟學期中複習', accumulatedMinutes: 138 }, 
-                { name: 'Java 程式設計', accumulatedMinutes: 78 },  
-                { name: '英文單字背誦', accumulatedMinutes: 30 }    
-            ]
-        };
-    
-        const totalTimeEl = document.getElementById('today-time-val');
-        if (totalTimeEl) totalTimeEl.innerText = mockTodayData.totalHours;
-    
-        const subjectListEl = document.getElementById('today-subjects-list');
-        if (subjectListEl) {
-            subjectListEl.innerHTML = '';
-            mockTodayData.subjects.forEach(sub => {
-                const tomatoCount = Math.floor(sub.accumulatedMinutes / 25) || 1; 
-                let tomatoesHTML = '';
-                for (let i = 0; i < tomatoCount; i++) {
-                    tomatoesHTML += getTomatoSVG(true, 'mini-tomato');
-                }
-    
-                const subjectHours = (sub.accumulatedMinutes / 60).toFixed(1);
-    
-                subjectListEl.innerHTML += `
-                    <li class="sketch-subject-row">
-                        <div class="sub-row-top">
-                            <span class="sub-name"><i class="fa-solid fa-leaf" style="color: #A9E28F;"></i> ${sub.name}</span>
-                            <span class="sub-time">${subjectHours} h</span>
-                        </div>
-                        <div class="sub-visual-tomatoes">
-                            ${tomatoesHTML}
-                        </div>
-                    </li>
-                `;
-            });
-        }
-    
-        // 2. 右上：一週連續學習 (7天番茄 + 下方標示星期)
-        const streakContainer = document.getElementById('streak-tomatoes-container');
-        if (streakContainer) {
-            streakContainer.innerHTML = '';
-            const days = ['一', '二', '三', '四', '五', '六', '日'];
-            const weeklyStatus = [true, true, true, false, true, false, false]; 
-            
-            days.forEach((day, index) => {
-                const isDone = weeklyStatus[index];
-                const item = document.createElement('div');
-                item.className = 'streak-day-item';
-                item.innerHTML = `
-                    ${getTomatoSVG(isDone, 'week-tomato-icon')}
-                    <span class="streak-day-label">${day}</span>
-                `;
-                streakContainer.appendChild(item);
-            });
-        }
-    
-        // 3. 右下：4週 (28格) 熱力田假資料
+    const subjectListEl = document.getElementById('today-subjects-list');
+    if (subjectListEl) {
+        subjectListEl.innerHTML = '';
+        mockTodayData.subjects.forEach(sub => {
+            const tomatoCount = Math.floor(sub.accumulatedMinutes / 25) || 1; 
+            let tomatoesHTML = '';
+            for (let i = 0; i < tomatoCount; i++) {
+                tomatoesHTML += getTomatoSVG(true, 'mini-tomato');
+            }
+
+            const subjectHours = (sub.accumulatedMinutes / 60).toFixed(1);
+
+            subjectListEl.innerHTML += `
+                <li class="sketch-subject-row">
+                    <div class="sub-row-top">
+                        <span class="sub-name"><i class="fa-solid fa-leaf" style="color: #A9E28F;"></i> ${sub.name}</span>
+                        <span class="sub-time">${subjectHours} h</span>
+                    </div>
+                    <div class="sub-visual-tomatoes">
+                        ${tomatoesHTML}
+                    </div>
+                </li>
+            `;
+        });
+    }
+
+    const streakContainer = document.getElementById('streak-tomatoes-container');
+    if (streakContainer) {
+        streakContainer.innerHTML = '';
+        const days = ['一', '二', '三', '四', '五', '六', '日'];
+        const weeklyStatus = [true, true, true, false, true, false, false]; 
+        
+        days.forEach((day, index) => {
+            const isDone = weeklyStatus[index];
+            const item = document.createElement('div');
+            item.className = 'streak-day-item';
+            item.innerHTML = `
+                ${getTomatoSVG(isDone, 'week-tomato-icon')}
+                <span class="streak-day-label">${day}</span>
+            `;
+            streakContainer.appendChild(item);
+        });
+    }
+
     const heatmapGrid = document.getElementById('heatmap-grid');
     if (heatmapGrid) {
         heatmapGrid.innerHTML = '';
-        const totalCells = 28; // 4週 × 7天 = 28格
-        
-        // 模擬最近 28 天的收成等級 (0代表沒種，1~4代表不同濃度的番茄紅)
+        const totalCells = 28; 
         const mockLevels = [
             0, 1, 2, 3, 4, 2, 0,
             1, 3, 4, 2, 1, 3, 4,
@@ -579,7 +560,7 @@ function getTomatoSVG(isFilled, extraClass = "") {
             heatmapGrid.appendChild(cell);
         }
     }
-    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     updateSketchAchievementsUI();
