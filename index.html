@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- @AI-INSTRUCTION: STRICTLY DO NOT modify the HTML structure, class names, or nesting of this main container and its direct children. Layout is locked. -->
     <div class="app-container">
         
         <!-- ================= 左側：共用導覽列 ================= -->
@@ -29,8 +30,8 @@
                     <span>換裝商店</span>
                 </a>
                 <a href="#" class="nav-item" onclick="switchPage('page-achievements', event)">
-                    <i class="fa-solid fa-chart-column"></i>
-                    <span>我的成就</span>
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <span>收成紀錄</span>
                 </a>
             </nav>
 
@@ -45,6 +46,7 @@
         <main class="main-content">
             
             <!-- 頁面 1：專注計時 -->
+            <!-- @AI-INSTRUCTION: DO NOT alter flex layouts or positioning inside the timer page. -->
             <div id="page-timer" class="page-section active">
                 <div id="avatar-svg-container" class="avatar-box">
                     <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 1000" width="100%" height="100%">
@@ -89,7 +91,6 @@
                     </svg>
                 </div>
 
-                <!-- 顯示目前鎖定要專注的科目 (置中樣式在CSS內設定) -->
                 <div id="current-task-banner" class="task-banner">
                     目前專注任務：<span id="active-task-name">尚未選擇任務 (點擊待辦清單設定)</span>
                 </div>
@@ -99,7 +100,6 @@
                 <div class="control-buttons">
                     <button id="start-btn" class="btn btn-primary">開始</button>
                     <button id="reset-btn" class="btn btn-secondary">跳過/重置</button>
-                    <!-- 中間的關閉鈴聲按鈕已移除 -->
                 </div>
                 
                 <div class="settings-panel">
@@ -135,7 +135,6 @@
                     </div>
                 </div>
 
-                <!-- 新增：右下角懸浮鈴聲控制按鈕 -->
                 <button id="sound-toggle-btn" class="sound-floating-btn">
                     <i class="fa-solid fa-bell"></i>
                     <span id="sound-status">鈴聲: 開</span>
@@ -202,7 +201,6 @@
                           </g>
                         </svg>
                     </div>
-                    <!-- 儲存按鈕已移除 -->
                 </div>
                 <div class="shop-panel">
                     <div class="shop-header">
@@ -214,14 +212,12 @@
                         </div>
                     </div>
                    <div class="shop-grid">
-                        <!-- 商品 1：藍色連身裙 -->
                         <div class="shop-item" onclick="changeOutfit('dresstest')" style="display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; padding: 10px;">
                             <svg viewBox="200 500 600 400" width="70" height="70">
                                 <path fill="#abdbe3" d="M215.56,546.76v121.92c40.32,26.88,80.64,53.76,120.96,80.64l-60.48,120.96c37.21,20.37,108.8,53.1,204.48,57.6,111.19,5.23,195.48-30.47,234.24-49.92-17.92-40.96-35.84-81.92-53.76-122.88,37.37-25.6,74.75-51.2,112.12-76.8v-117.12c-91.13,14.08-182.27,28.16-273.4,42.24"/>
                             </svg>
                             <span style="font-size: 14px; color: var(--primary); font-weight: bold; margin-top: 4px;">藍色連身裙</span>
                         </div>
-                        <!-- 商品 2：橘色洋裝 -->
                         <div class="shop-item" onclick="changeOutfit('dresstest2')" style="display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; padding: 10px;">
                             <svg viewBox="200 500 600 400" width="70" height="70">
                                 <path fill="#E76F51" d="M215.56,546.76v121.92c40.32,26.88,80.64,53.76,120.96,80.64l-60.48,120.96c37.21,20.37,108.8,53.1,204.48,57.6,111.19,5.23,195.48-30.47,234.24-49.92-17.92-40.96-35.84-81.92-53.76-122.88,37.37-25.6,74.75-51.2,112.12-76.8v-117.12c-91.13,14.08-182.27,28.16-273.4,42.24"/>
@@ -234,74 +230,51 @@
                 </div>
             </div>
 
-           <!-- 將左側導覽列的「我的成就」文字修改為「收成紀錄」 -->
-<!-- <a href="#" class="nav-item" onclick="switchPage('page-achievements', event)">
-    <i class="fa-solid fa-basket-shopping"></i>
-    <span>收成紀錄</span>
-</a> -->
+            <!-- 頁面 4：收成紀錄 -->
+            <!-- @AI-INSTRUCTION: STRICTLY DO NOT modify the HTML structure, class names, or nesting of this harvest wrapper. The DOM structure here is perfectly mapped to CSS flexbox. -->
+            <div id="page-achievements" class="page-section">
+                <div class="harvest-wrapper">
+                    <h2 class="section-title">收成紀錄</h2>
+                    
+                    <!-- 上方：今日菜籃單 -->
+                    <div class="today-basket-card">
+                        <div class="basket-header">
+                            <div class="basket-icon-box"><i class="fa-solid fa-basket-shopping"></i></div>
+                            <div class="basket-title-area">
+                                <span class="basket-subtitle">今日收成</span>
+                                <div class="basket-total-time">
+                                    <span id="today-total-hours">0.0</span><span class="unit">小時</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="subject-list-container">
+                            <h4 class="subject-list-title">今日專注科目</h4>
+                            <ul id="today-subject-list" class="subject-list">
+                                <!-- JS 動態生成今日科目 -->
+                                <li class="empty-subject">今日尚未有收成，趕快開始專注吧！</li>
+                            </ul>
+                        </div>
+                    </div>
 
-<!-- ================= 頁面 4：我的成就 ================= -->
-<div id="page-achievements" class="page-section">
-    <div class="achievements-wrapper">
-        <h2 class="section-title">我的成就</h2>
-        
-        <!-- 上半部：雙欄設計 (短中期反饋) -->
-        <div class="achievements-top-row">
-            
-            <!-- 左側：今日學習 -->
-            <div class="achievement-card today-learning-card">
-                <h3 class="card-title">今日學習</h3>
-                <div class="today-stats">
-                    <span class="today-time" id="today-time-val">0.0</span>
-                    <span class="today-unit">小時</span>
-                </div>
-                <div class="today-subjects">
-                    <ul id="today-subjects-list">
-                        <!-- JS 動態生成 -->
-                        <li class="empty-hint">今日尚未開始專注</li>
-                    </ul>
+                    <!-- 下方：一週番茄藤 (連續學習蓋章) -->
+                    <div class="weekly-vine-card">
+                        <h3 class="vine-title">一週連續學習</h3>
+                        <p class="vine-subtitle">每天種下一顆番茄，保持生長節奏！</p>
+                        
+                        <div class="vine-container">
+                            <div class="vine-line"></div>
+                            <div class="vine-nodes" id="weekly-vine-nodes">
+                                <!-- JS 動態生成 7 天的番茄 -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- 右側：連續學習 (一週番茄) -->
-            <div class="achievement-card streak-card">
-                <h3 class="card-title">連續學習</h3>
-                <p class="card-subtitle">本週專注打卡</p>
-                <div class="streak-tomatoes" id="streak-tomatoes-container">
-                    <!-- JS 動態生成 7 天番茄 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 下半部：熱力田地 (長期累積) -->
-        <div class="achievement-card heatmap-card">
-            <h3 class="card-title">專注熱力田</h3>
-            <p class="card-subtitle">每一格都是你種下的時間，顏色越深代表當天越專注</p>
-            
-            <div class="field-container">
-                <!-- CSS 模擬的田地壟溝背景 -->
-                <div class="heatmap-grid" id="heatmap-grid">
-                    <!-- JS 動態生成約半年的小土丘方格 -->
-                </div>
-            </div>
-            
-            <div class="heatmap-legend">
-                <span class="legend-label">少</span>
-                <div class="legend-color level-0"></div>
-                <div class="legend-color level-1"></div>
-                <div class="legend-color level-2"></div>
-                <div class="legend-color level-3"></div>
-                <div class="legend-color level-4"></div>
-                <span class="legend-label">多</span>
-            </div>
-        </div>
-    </div>
-</div>
 
         </main>
     </div>
 
-    <!-- 引用外部 JavaScript -->
     <script src="tomoto.js"></script>
     <audio id="alarm-audio" src="alarm.mp3" preload="auto"></audio>
 </body>
