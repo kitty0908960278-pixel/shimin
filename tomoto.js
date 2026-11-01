@@ -376,7 +376,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakValueEl; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
@@ -402,19 +402,19 @@ if (settingCards.length >= 3) {
 }
 
 const applyBtn = document.querySelector('.btn-apply');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', () => {
-            if (isRunning) {
-                alert('計時中無法更改設定，請先重置計時器！');
-                return;
-            }
-            totalSeconds = workTimeSetting * 60;
-            remainingTomatoes = tomatoCountSetting;
-            isWorkMode = true;
-            updateTimerDisplay();
-            alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
-        });
-    }
+if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+        if (isRunning) {
+            alert('計時中無法更改設定，請先重置計時器！');
+            return;
+        }
+        totalSeconds = workTimeSetting * 60;
+        remainingTomatoes = tomatoCountSetting;
+        isWorkMode = true;
+        updateTimerDisplay();
+        alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
+    });
+}
 
 
 // ==========================================
@@ -444,7 +444,10 @@ if (soundBtn) {
             }
         }
     });
-    // ==========================================
+}
+
+
+// ==========================================
 // 頁面切換功能
 // ==========================================
 window.switchPage = function(pageId, event) {
@@ -471,6 +474,8 @@ window.switchPage = function(pageId, event) {
         event.currentTarget.classList.add('active');
     }
 };
+
+
 // ==========================================
 // 8. 我的成就 (今日學習、連續打卡、熱力田) 邏輯
 // ==========================================
@@ -554,4 +559,3 @@ function updateAchievementsUI() {
 document.addEventListener('DOMContentLoaded', () => {
     updateAchievementsUI();
 });
-}
