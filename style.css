@@ -58,7 +58,7 @@ body {
 .main-content { flex: 1; position: relative; overflow: hidden; }
 .page-section { display: none; width: 100%; height: 100%; animation: fadeIn 0.4s ease forwards; }
 
-#page-timer.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; }
+#page-timer.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; position: relative; }
 #page-todo.active, #page-achievements.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 140px; }
 #page-shop.active { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; }
 
@@ -85,7 +85,21 @@ body {
     display: flex; justify-content: center; align-items: center; 
     overflow: hidden;
 }
-.timer-display { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 128px; font-weight: 900; line-height: 1; margin: 30px 0 20px 0; }
+
+/* 任務橫幅樣式 */
+.task-banner {
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 700;
+    background: var(--card-bg-alt);
+    padding: 6px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    margin: 25px 0; 
+}
+#active-task-name { color: var(--primary); }
+
+.timer-display { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 128px; font-weight: 900; line-height: 1; margin: 0 0 30px 0; }
 .control-buttons { display: flex; gap: 30px; margin-bottom: 30px; }
 .control-buttons .btn { width: 200px; height: 74px; }
 .btn-secondary { background-color: var(--card-bg-alt); color: var(--primary); border: 3px solid var(--primary-light); }
@@ -100,12 +114,39 @@ body {
 .circle-btn { width: 25px; height: 25px; border-radius: 50%; background-color: #FFF; border: none; color: var(--text-muted); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 12px; }
 .setting-value { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 24px; font-weight: 900; }
 
+/* 右下角懸浮鈴聲按鈕 */
+.sound-floating-btn {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    background-color: var(--card-bg-alt);
+    color: var(--primary);
+    border: 3px solid var(--primary-light);
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.2s;
+    z-index: 100;
+}
+.sound-floating-btn:hover { transform: translateY(-2px); background-color: var(--primary-bg); }
+.sound-floating-btn.off { color: var(--text-gray); border-color: #D6D3D1; }
+
+
 /* ================= 頁面 2：待辦清單 ================= */
 .todo-wrapper { width: 760px; display: flex; flex-direction: column; gap: 15px; }
 .todo-input-row { display: flex; gap: 20px; align-items: stretch; margin-bottom: 15px; }
 .todo-input { flex: 1; height: 69px; background-color: var(--card-bg); border-radius: 32px; border: 3px solid var(--primary-light); padding: 0 32px; font-size: 20px; color: var(--text-gray); outline: none; }
 .btn-add { width: 90px; height: 69px; background-color: var(--primary); border-radius: 20px; box-shadow: var(--shadow-soft); border: none; color: #FFF; font-size: 24px; cursor: pointer; }
 .todo-list { display: flex; flex-direction: column; gap: 20px; list-style: none; }
+
+
 .todo-card { height: 143px; background-color: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow-soft); display: flex; align-items: center; padding: 0 32px; gap: 15px; }
 .task-text { color: #857771; font-size: 24px; font-weight: 500; }
 .task-time-badge { 
@@ -136,10 +177,7 @@ body {
     gap: 6px; 
     margin-left: 15px; 
 }
-.task-focus-btn:hover { 
-    background-color: var(--primary); 
-    color: #FFF; 
-}
+.task-focus-btn:hover { background-color: var(--primary); color: #FFF; }
 .custom-checkbox { position: relative; width: 25px; height: 25px; cursor: pointer; display: block; }
 .custom-checkbox input { opacity: 0; cursor: pointer; }
 .checkmark { position: absolute; top: 0; left: 0; height: 25px; width: 25px; border: 2px solid #8A8A8A; border-radius: 4px; }
@@ -147,25 +185,21 @@ body {
 .checkmark:after { content: ""; position: absolute; display: none; left: 8px; top: 3px; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .custom-checkbox input:checked ~ .checkmark:after { display: block; }
 
+
 /* ================= 頁面 3：換裝商店 ================= */
-.character-panel { display: flex; flex-direction: column; width: 486px; gap: 10px; }
-.character-preview-box { 
-    height: 486px; 
-    background-color: var(--card-bg); 
-    border-radius: 32px; 
-    box-shadow: var(--shadow-soft); 
-    margin-bottom: 20px; 
-    overflow: hidden;
-}
-.btn-save { height: 74px; border-radius: 20px; width: 100%; }
-.shop-panel { width: 850px; min-height: 590px; background-color: var(--card-bg); border-radius: 32px; padding: 45px 50px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; }
+.character-panel { display: flex; flex-direction: column; width: 486px; height: 650px; padding-top: 45px; }
+.shop-panel { width: 850px; height: 650px; background-color: var(--card-bg); border-radius: 32px; padding: 45px 50px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; }
+.character-panel .section-title { margin-bottom: 40px; }
 .shop-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+.shop-header .section-title { margin-bottom: 0; }
+.character-preview-box { flex: 1; background-color: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow-soft); overflow: hidden; }
 .filter-toggle { display: flex; background-color: var(--bg-color); border-radius: 12px; padding: 6px; gap: 5px; }
 .filter-btn { background: transparent; border: none; color: var(--text-muted); font-size: 16px; font-weight: 500; padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
 .filter-btn.active { background-color: #FFF; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .shop-grid { display: flex; flex-wrap: wrap; gap: 30px; }
 .shop-item { width: 189px; height: 189px; background-color: #FEFEFE; border: 2px solid var(--primary-light); border-radius: 20px; cursor: pointer; transition: transform 0.2s; }
 .shop-item:hover { transform: scale(1.03); }
+
 
 /* ================= 頁面 4：我的成就 ================= */
 .achievements-wrapper { width: 896px; display: flex; flex-direction: column; gap: 24px; }
@@ -202,7 +236,68 @@ body {
 .locked-badge { opacity: 0.4; filter: grayscale(100%); }
 .locked-badge .badge-icon { background-color: var(--progress-bg); border: 1px solid #E7E5E4; color: var(--text-gray); }
 
-/* 強制讓所有 SVG 內部元素不攔截滑鼠事件，確保按鈕可點擊 */
+/* ================= 頁面 4：我的成就 (番茄田地版) ================= */
+.achievements-wrapper { width: 896px; display: flex; flex-direction: column; gap: 24px; }
+.achievement-card { 
+    background-color: var(--card-bg); border-radius: 32px; padding: 32px 40px; 
+    box-shadow: var(--shadow-soft); display: flex; flex-direction: column; 
+}
+.card-title { color: var(--text-dark); font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.card-subtitle { color: var(--text-gray); font-size: 14px; font-weight: 500; margin-bottom: 24px; }
+
+/* 上半部雙欄佈局 */
+.achievements-top-row { display: flex; gap: 24px; }
+.today-learning-card { flex: 1; min-height: 220px; }
+.streak-card { flex: 1.5; min-height: 220px; }
+
+/* 今日學習 */
+.today-stats { display: flex; align-items: baseline; gap: 8px; margin: 10px 0 20px 0; border-bottom: 2px dashed #EEDFCE; padding-bottom: 16px; }
+.today-time { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 48px; font-weight: 900; line-height: 1; }
+.today-unit { color: var(--text-dark); font-size: 16px; font-weight: 700; }
+#today-subjects-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+#today-subjects-list li { display: flex; justify-content: space-between; color: var(--text-dark); font-size: 16px; font-weight: 700; background: var(--bg-color); padding: 10px 16px; border-radius: 12px; }
+.empty-hint { color: var(--text-gray); font-weight: 500; }
+
+/* 連續學習 (一週番茄) */
+.streak-tomatoes { display: flex; justify-content: space-between; align-items: flex-end; height: 100%; padding-bottom: 10px; }
+.streak-day { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.streak-label { font-size: 14px; color: var(--text-gray); font-weight: 700; }
+.streak-day.active .streak-label { color: var(--primary); }
+.tomato-svg { width: 44px; height: 44px; transition: transform 0.2s; }
+.streak-day:hover .tomato-svg { transform: scale(1.1) rotate(-5deg); }
+.tomato-empty .t-body { fill: transparent; stroke: #D6D3D1; stroke-width: 4; }
+.tomato-empty .t-leaf { fill: #E7E5E4; }
+.tomato-filled .t-body { fill: #E76F51; }
+.tomato-filled .t-leaf { fill: #6B9362; }
+
+/* 專注熱力田 (下半部) */
+.field-container {
+    background-color: var(--bg-color); border-radius: 20px; padding: 24px;
+    overflow-x: auto; margin-bottom: 20px;
+    /* 淡淡的橫向水平虛線，模擬田地壟溝 */
+    background-image: repeating-linear-gradient( transparent, transparent 15px, rgba(214, 204, 194, 0.3) 15px, rgba(214, 204, 194, 0.3) 16px );
+    background-position: 0 9px;
+}
+.heatmap-grid { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; gap: 4px; }
+.heatmap-cell { 
+    width: 12px; height: 12px; border-radius: 4px; /* 小土丘圓角感 */
+    background-color: #F4EBE1; /* 預設未種植的土壤色 */
+    box-shadow: inset 0 -1px 2px rgba(0,0,0,0.05); /* 微立體感 */
+}
+/* 田地熱力色階 (暖橘色系) */
+.heatmap-cell.level-1 { background-color: #FDE3D2; }
+.heatmap-cell.level-2 { background-color: #F6A36F; }
+.heatmap-cell.level-3 { background-color: #F08A5D; }
+.heatmap-cell.level-4 { background-color: #E76F51; }
+
+.heatmap-legend { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.legend-label { color: var(--text-gray); font-size: 12px; font-weight: 700; margin: 0 4px; }
+.legend-color { width: 12px; height: 12px; border-radius: 3px; }
+.legend-color.level-0 { background-color: #F4EBE1; }
+.legend-color.level-1 { background-color: #FDE3D2; }
+.legend-color.level-2 { background-color: #F6A36F; }
+.legend-color.level-3 { background-color: #F08A5D; }
+.legend-color.level-4 { background-color: #E76F51; }
 svg {
     pointer-events: none;
 }
