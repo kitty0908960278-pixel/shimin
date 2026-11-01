@@ -10,11 +10,9 @@ const taskList = document.getElementById('task-list');
 const coinValueEls = document.querySelectorAll('.coin-value');
 const activeTaskNameEl = document.getElementById('active-task-name');
 
-// 🔔 鈴聲按鈕 DOM 抓取
 const soundBtn = document.getElementById('sound-toggle-btn');
 const soundStatus = document.getElementById('sound-status');
 
-// 計時器與番茄鐘循環狀態 (預設值)
 let workTimeSetting = 25;   
 let breakTimeSetting = 5;   
 let tomatoCountSetting = 4; 
@@ -26,16 +24,14 @@ let targetTime = null;
 
 let isWorkMode = true; 
 let remainingTomatoes = tomatoCountSetting; 
-let isSoundOn = true; // 鈴聲開關狀態紀錄 (預設開啟)
+let isSoundOn = true; 
 
-// 資料持久化 (localStorage)
 let coins = parseInt(localStorage.getItem('pomodoro_coins')) || 120;
 let tasks = JSON.parse(localStorage.getItem('pomodoro_tasks')) || [];
 let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [0]; 
 let activeTaskId = localStorage.getItem('pomodoro_active_task') || null;
 let currentActiveOutfit = localStorage.getItem('pomodoro_active_outfit') || 'dresstest';
 
-// 初始化渲染
 updateCoinDisplay();
 renderTasks();
 updateTimerDisplay();
@@ -83,15 +79,13 @@ function updateCoinDisplay() {
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
-        // 如果目前正在計時中，點擊代表要「暫停」
         if (isRunning) {
-            clearInterval(timerId); // 清除計時器
+            clearInterval(timerId); 
             isRunning = false;
             startBtn.innerText = isWorkMode ? "繼續專注" : "繼續休息";
             return;
         }
 
-        // 如果目前是暫停或尚未開始，點擊代表要「開始/繼續」
         if (remainingTomatoes <= 0) {
             remainingTomatoes = tomatoCountSetting;
             isWorkMode = true;
@@ -99,7 +93,7 @@ if (startBtn) {
         }
 
         isRunning = true;
-        startBtn.innerText = "暫停"; // 計時中顯示「暫停」
+        startBtn.innerText = "暫停"; 
 
         targetTime = Date.now() + totalSeconds * 1000;
         runLoopTimer();
@@ -117,7 +111,6 @@ function runLoopTimer() {
         } else {
             clearInterval(timerId);
             
-            // 🔔 鈴聲開關判斷
             if (isSoundOn) {
                 const alarmSound = document.getElementById('alarm-audio');
                 if (alarmSound) {
@@ -359,7 +352,7 @@ filterBtns.forEach(btn => {
 
 
 // ==========================================
-// 6. 計時設定面板調整邏輯 (+ / - 按鈕綁定)
+// 6. 計時設定面板調整邏輯
 // ==========================================
 let workValueEl, breakValueEl, tomatoValueEl;
 
@@ -380,7 +373,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
@@ -524,7 +517,7 @@ function updateHarvestUI() {
         const isCompleted = mockWeeklyStatus[index];
         const isToday = index === currentDayIndex;
         
-        const node = document.createElement('div');
+        node = document.createElement('div');
         node.className = `day-node ${isToday ? 'active' : ''}`;
         node.innerHTML = `
             <div class="tomato-icon">${getTomatoSVG(isCompleted)}</div>
