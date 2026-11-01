@@ -10,9 +10,11 @@ const taskList = document.getElementById('task-list');
 const coinValueEls = document.querySelectorAll('.coin-value');
 const activeTaskNameEl = document.getElementById('active-task-name');
 
+// 🔔 新增：鈴聲按鈕 DOM 抓取
 const soundBtn = document.getElementById('sound-toggle-btn');
 const soundStatus = document.getElementById('sound-status');
 
+// 計時器與番茄鐘循環狀態 (預設值)
 let workTimeSetting = 25;   
 let breakTimeSetting = 5;   
 let tomatoCountSetting = 4; 
@@ -24,14 +26,16 @@ let targetTime = null;
 
 let isWorkMode = true; 
 let remainingTomatoes = tomatoCountSetting; 
-let isSoundOn = true; 
+let isSoundOn = true; // 🔔 新增：鈴聲開關狀態紀錄 (預設開啟)
 
+// 資料持久化 (localStorage)
 let coins = parseInt(localStorage.getItem('pomodoro_coins')) || 120;
 let tasks = JSON.parse(localStorage.getItem('pomodoro_tasks')) || [];
 let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [0]; 
 let activeTaskId = localStorage.getItem('pomodoro_active_task') || null;
 let currentActiveOutfit = localStorage.getItem('pomodoro_active_outfit') || 'dresstest';
 
+// 初始化渲染
 updateCoinDisplay();
 renderTasks();
 updateTimerDisplay();
@@ -75,17 +79,12 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 全自動循環計時、暫停與任務累計時間核心
+// 3. 全自動循環計時與任務累計時間核心
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
-        if (isRunning) {
-            clearInterval(timerId); 
-            isRunning = false;
-            startBtn.innerText = isWorkMode ? "繼續專注" : "繼續休息";
-            return;
-        }
-
+        if (isRunning) return;
+        
         if (remainingTomatoes <= 0) {
             remainingTomatoes = tomatoCountSetting;
             isWorkMode = true;
@@ -93,7 +92,7 @@ if (startBtn) {
         }
 
         isRunning = true;
-        startBtn.innerText = "暫停"; 
+        startBtn.innerText = isWorkMode ? "專注計時中..." : "休息中...";
 
         targetTime = Date.now() + totalSeconds * 1000;
         runLoopTimer();
@@ -111,10 +110,11 @@ function runLoopTimer() {
         } else {
             clearInterval(timerId);
             
+            // 🔔 修改：加入鈴聲開關判斷
             if (isSoundOn) {
                 const alarmSound = document.getElementById('alarm-audio');
                 if (alarmSound) {
-                    alarmSound.currentTime = 0;
+                    alarmSound.currentTime = 0; // 讓音樂從頭開始播
                     alarmSound.play().catch(error => {
                         console.log("播放失敗原因：", error);
                     });
@@ -302,7 +302,7 @@ function updateActiveTaskUI() {
 
 
 // ==========================================
-// 5. 換裝商店與 SVG 聯動邏輯
+// 5. 換裝商店與 SVG 聯動邏輯 (無通知靜默切換)
 // ==========================================
 function changeOutfit(targetOutfitId) {
     currentActiveOutfit = targetOutfitId;
@@ -321,6 +321,7 @@ function changeOutfit(targetOutfitId) {
     });
 }
 
+// 綁定換裝商店裡卡片的點擊事件 (已移除 alert 通知)
 document.querySelectorAll('.shop-item').forEach((item, index) => {
     const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
     item.addEventListener('click', () => {
@@ -342,17 +343,19 @@ document.querySelectorAll('.shop-item').forEach((item, index) => {
     });
 });
 
+// 換裝商店分類切換按鈕邏輯 (全部 / 髮型 / 服飾)
 const filterBtns = document.querySelectorAll('.filter-btn');
 filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        // 可依需求擴充篩選邏輯
     });
 });
 
 
 // ==========================================
-// 6. 計時設定面板調整邏輯
+// 6. 計時設定面板調整邏輯 (+ / - 按鈕綁定)
 // ==========================================
 let workValueEl, breakValueEl, tomatoValueEl;
 
@@ -373,7 +376,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakValueEl; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
@@ -415,22 +418,25 @@ if (applyBtn) {
 
 
 // ==========================================
-// 7. 鈴聲開關按鈕控制邏輯
+// 7. 新增：右下角鈴聲開關按鈕控制邏輯
 // ==========================================
 if (soundBtn) {
     soundBtn.addEventListener('click', () => {
-        isSoundOn = !isSoundOn; 
+        isSoundOn = !isSoundOn; // 切換狀態
         const soundIcon = soundBtn.querySelector('i');
         
         if (isSoundOn) {
+            // 切換為 開啟 狀態
             if (soundStatus) soundStatus.textContent = '鈴聲: 開';
             soundIcon.className = 'fa-solid fa-bell';
             soundBtn.classList.remove('off');
         } else {
+            // 切換為 關閉 狀態
             if (soundStatus) soundStatus.textContent = '鈴聲: 關';
             soundIcon.className = 'fa-solid fa-bell-slash';
             soundBtn.classList.add('off');
             
+            // 如果切換時鈴聲剛好在播放，立刻將其靜音/暫停
             const alarmSound = document.getElementById('alarm-audio');
             if (alarmSound) {
                 alarmSound.pause();
@@ -442,24 +448,28 @@ if (soundBtn) {
 
 
 // ==========================================
-// 8. 頁面切換功能
+// 頁面切換功能
 // ==========================================
 window.switchPage = function(pageId, event) {
     if (event) event.preventDefault();
     
+    // 隱藏所有頁面內容
     document.querySelectorAll('.page-section').forEach(page => {
         page.classList.remove('active');
     });
     
+    // 移除所有左側選單的 active 狀態
     document.querySelectorAll('.nav-item').forEach(nav => {
         nav.classList.remove('active');
     });
     
+    // 顯示目標頁面
     const targetPage = document.getElementById(pageId);
     if (targetPage) {
         targetPage.classList.add('active');
     }
     
+    // 替當前點擊的按鈕加上 active 狀態
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
     }
@@ -467,66 +477,85 @@ window.switchPage = function(pageId, event) {
 
 
 // ==========================================
-// 9. 收成紀錄渲染邏輯
+// 8. 我的成就 (今日學習、連續打卡、熱力田) 邏輯
 // ==========================================
-function updateHarvestUI() {
+function updateAchievementsUI() {
+    // --- A. 更新今日學習 ---
+    const subjectListEl = document.getElementById('today-subjects-list');
     let todayTotalMinutes = 0;
-    const subjectListEl = document.getElementById('today-subject-list');
     const activeTasks = tasks.filter(t => t.accumulatedMinutes && t.accumulatedMinutes > 0);
     
     if (subjectListEl) {
         if (activeTasks.length > 0) {
-            subjectListEl.innerHTML = ''; 
+            subjectListEl.innerHTML = '';
             activeTasks.forEach(task => {
                 todayTotalMinutes += task.accumulatedMinutes;
                 const tomatoCount = Math.floor(task.accumulatedMinutes / 25) || 1; 
-                
-                const li = document.createElement('li');
-                li.className = 'subject-item';
-                li.innerHTML = `
-                    <span class="sub-name"><i class="fa-solid fa-seedling"></i> ${task.text}</span>
-                    <span class="sub-time">${(task.accumulatedMinutes / 60).toFixed(1)}h (${tomatoCount} 🍅)</span>
+                subjectListEl.innerHTML += `
+                    <li>
+                        <span>${task.text}</span>
+                        <span style="color: var(--text-gray); font-family: 'Nunito', sans-serif;">${tomatoCount} 🍅</span>
+                    </li>
                 `;
-                subjectListEl.appendChild(li);
             });
         } else {
-            subjectListEl.innerHTML = '<li class="empty-subject">今日尚未有收成，趕快至待辦清單設定任務並開始計時吧！</li>';
+            subjectListEl.innerHTML = '<li class="empty-hint">今日尚未開始專注</li>';
         }
     }
 
     const todayTotalHours = (todayTotalMinutes / 60).toFixed(1);
-    const totalHoursEl = document.getElementById('today-total-hours');
+    const totalHoursEl = document.getElementById('today-time-val');
     if (totalHoursEl) totalHoursEl.innerText = todayTotalHours;
 
-    const vineNodesEl = document.getElementById('weekly-vine-nodes');
-    if (!vineNodesEl) return;
-    vineNodesEl.innerHTML = '';
-    
-    const daysOfWeek = ['一', '二', '三', '四', '五', '六', '日'];
-    const mockWeeklyStatus = [true, true, false, true, false, false, false]; 
-    const currentDayIndex = 3; 
 
-    const getTomatoSVG = (isFilled) => `
-        <svg viewBox="0 0 100 100" class="tomato-svg ${isFilled ? 'tomato-filled' : 'tomato-empty'}">
-            <path class="tomato-leaf" d="M50 15 Q40 5 30 20 Q45 25 50 20 Q55 25 70 20 Q60 5 50 15 Z" />
-            <path class="tomato-body" d="M50 25 C80 25 90 50 85 75 C80 95 60 95 50 90 C40 95 20 95 15 75 C10 50 20 25 50 25 Z" />
-        </svg>
-    `;
-
-    daysOfWeek.forEach((day, index) => {
-        const isCompleted = mockWeeklyStatus[index];
-        const isToday = index === currentDayIndex;
+    // --- B. 更新一週番茄藤 ---
+    const streakContainer = document.getElementById('streak-tomatoes-container');
+    if (streakContainer) {
+        streakContainer.innerHTML = '';
+        const days = ['一', '二', '三', '四', '五', '六', '日'];
+        // 模擬本週打卡狀態 (實務上可串接 localStorage 每日紀錄)
+        const mockStreakData = [true, true, false, true, false, false, false]; 
+        const todayIndex = 3; // 假設今天是星期四
         
-        node = document.createElement('div');
-        node.className = `day-node ${isToday ? 'active' : ''}`;
-        node.innerHTML = `
-            <div class="tomato-icon">${getTomatoSVG(isCompleted)}</div>
-            <span class="day-label">${day}</span>
+        const getTomatoSVG = (isFilled) => `
+            <svg viewBox="0 0 100 100" class="tomato-svg ${isFilled ? 'tomato-filled' : 'tomato-empty'}">
+                <path class="t-leaf" d="M50 15 Q40 5 30 20 Q45 25 50 20 Q55 25 70 20 Q60 5 50 15 Z" />
+                <path class="t-body" d="M50 25 C80 25 90 50 85 75 C80 95 60 95 50 90 C40 95 20 95 15 75 C10 50 20 25 50 25 Z" />
+            </svg>
         `;
-        vineNodesEl.appendChild(node);
-    });
+
+        days.forEach((day, index) => {
+            const isCompleted = mockStreakData[index];
+            const isToday = index === todayIndex;
+            streakContainer.innerHTML += `
+                <div class="streak-day ${isToday ? 'active' : ''}">
+                    ${getTomatoSVG(isCompleted)}
+                    <span class="streak-label">${day}</span>
+                </div>
+            `;
+        });
+    }
+
+    // --- C. 產生專注熱力田 ---
+    const heatmapGrid = document.getElementById('heatmap-grid');
+    if (heatmapGrid) {
+        heatmapGrid.innerHTML = '';
+        // 產生半年份 (26週 x 7天 = 182天) 的方格
+        const totalDays = 26 * 7; 
+        
+        for (let i = 0; i < totalDays; i++) {
+            const cell = document.createElement('div');
+            // 隨機產生假資料來呈現田地的顏色錯落感
+            // 等級 0: 未專注 (預設土壤色), 1~4: 專注等級
+            const randomLevel = Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0;
+            
+            cell.className = `heatmap-cell ${randomLevel > 0 ? 'level-' + randomLevel : ''}`;
+            heatmapGrid.appendChild(cell);
+        }
+    }
 }
 
+// 頁面載入時初始化成就畫面
 document.addEventListener('DOMContentLoaded', () => {
-    updateHarvestUI();
+    updateAchievementsUI();
 });
