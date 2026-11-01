@@ -376,7 +376,7 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakValueEl; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl ? breakTimeSetting : breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
             breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
@@ -402,19 +402,19 @@ if (settingCards.length >= 3) {
 }
 
 const applyBtn = document.querySelector('.btn-apply');
-if (applyBtn) {
-    applyBtn.addEventListener('click', () => {
-        if (isRunning) {
-            alert('計時中無法更改設定，請先重置計時器！');
-            return;
-        }
-        totalSeconds = workTimeSetting * 60;
-        remainingTomatoes = tomatoCountSetting;
-        isWorkMode = true;
-        updateTimerDisplay();
-        alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
-    });
-}
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            if (isRunning) {
+                alert('計時中無法更改設定，請先重置計時器！');
+                return;
+            }
+            totalSeconds = workTimeSetting * 60;
+            remainingTomatoes = tomatoCountSetting;
+            isWorkMode = true;
+            updateTimerDisplay();
+            alert(`設定已套用！\n專注：${workTimeSetting} 分鐘\n休息：${breakTimeSetting} 分鐘\n總番茄數：${tomatoCountSetting} 輪`);
+        });
+    }
 
 
 // ==========================================
@@ -444,10 +444,7 @@ if (soundBtn) {
             }
         }
     });
-}
-
-
-// ==========================================
+    // ==========================================
 // 頁面切換功能
 // ==========================================
 window.switchPage = function(pageId, event) {
@@ -474,88 +471,85 @@ window.switchPage = function(pageId, event) {
         event.currentTarget.classList.add('active');
     }
 };
-
-
 // ==========================================
-// 8. 我的成就 (今日學習、連續打卡、熱力田) 邏輯
+// 8. 收成紀錄 (番茄主題) 邏輯
 // ==========================================
-function updateAchievementsUI() {
-    // --- A. 更新今日學習 ---
-    const subjectListEl = document.getElementById('today-subjects-list');
+function updateHarvestUI() {
+    // --- A. 更新今日菜籃單 ---
     let todayTotalMinutes = 0;
+    const subjectListEl = document.getElementById('today-subject-list');
+    
+    // 過濾出有累計時間的任務 (大於 0 分鐘)
     const activeTasks = tasks.filter(t => t.accumulatedMinutes && t.accumulatedMinutes > 0);
     
-    if (subjectListEl) {
-        if (activeTasks.length > 0) {
-            subjectListEl.innerHTML = '';
-            activeTasks.forEach(task => {
-                todayTotalMinutes += task.accumulatedMinutes;
-                const tomatoCount = Math.floor(task.accumulatedMinutes / 25) || 1; 
-                subjectListEl.innerHTML += `
-                    <li>
-                        <span>${task.text}</span>
-                        <span style="color: var(--text-gray); font-family: 'Nunito', sans-serif;">${tomatoCount} 🍅</span>
-                    </li>
-                `;
-            });
-        } else {
-            subjectListEl.innerHTML = '<li class="empty-hint">今日尚未開始專注</li>';
-        }
+    if (activeTasks.length > 0) {
+        subjectListEl.innerHTML = ''; // 清空預設文字
+        activeTasks.forEach(task => {
+            todayTotalMinutes += task.accumulatedMinutes;
+            
+            // 計算這科相當於幾顆番茄 (以 25 分鐘為一顆來算)
+            const tomatoCount = Math.floor(task.accumulatedMinutes / 25) || 1; 
+            
+            const li = document.createElement('li');
+            li.className = 'subject-item';
+            li.innerHTML = `
+                <span class="sub-name"><i class="fa-solid fa-seedling"></i> ${task.text}</span>
+                <span class="sub-time">${(task.accumulatedMinutes / 60).toFixed(1)}h (${tomatoCount} 🍅)</span>
+            `;
+            subjectListEl.appendChild(li);
+        });
+    } else {
+        subjectListEl.innerHTML = '<li class="empty-subject">今日尚未有收成，趕快至待辦清單設定任務並開始計時吧！</li>';
     }
 
+    // 更新總小時
     const todayTotalHours = (todayTotalMinutes / 60).toFixed(1);
-    const totalHoursEl = document.getElementById('today-time-val');
+    const totalHoursEl = document.getElementById('today-total-hours');
     if (totalHoursEl) totalHoursEl.innerText = todayTotalHours;
 
 
     // --- B. 更新一週番茄藤 ---
-    const streakContainer = document.getElementById('streak-tomatoes-container');
-    if (streakContainer) {
-        streakContainer.innerHTML = '';
-        const days = ['一', '二', '三', '四', '五', '六', '日'];
-        // 模擬本週打卡狀態 (實務上可串接 localStorage 每日紀錄)
-        const mockStreakData = [true, true, false, true, false, false, false]; 
-        const todayIndex = 3; // 假設今天是星期四
+    const vineNodesEl = document.getElementById('weekly-vine-nodes');
+    if (!vineNodesEl) return;
+    vineNodesEl.innerHTML = '';
+    
+    const daysOfWeek = ['一', '二', '三', '四', '五', '六', '日'];
+    
+    // 這裡我們用一個陣列模擬一週的達成狀況 (true=有顏色, false=沒顏色)
+    // 實務上你可以把這個存進 localStorage 去比對日期
+    const mockWeeklyStatus = [true, true, false, true, false, false, false]; 
+    const currentDayIndex = 3; // 假設今天是星期四 (Index 3)
+
+    // 番茄的 SVG 結構
+    const getTomatoSVG = (isFilled) => `
+        <svg viewBox="0 0 100 100" class="tomato-svg ${isFilled ? 'tomato-filled' : 'tomato-empty'}">
+            <!-- 葉子/蒂頭 -->
+            <path class="tomato-leaf" d="M50 15 Q40 5 30 20 Q45 25 50 20 Q55 25 70 20 Q60 5 50 15 Z" />
+            <!-- 番茄本體 (稍微扁圓的可愛形狀) -->
+            <path class="tomato-body" d="M50 25 C80 25 90 50 85 75 C80 95 60 95 50 90 C40 95 20 95 15 75 C10 50 20 25 50 25 Z" />
+        </svg>
+    `;
+
+    daysOfWeek.forEach((day, index) => {
+        const isCompleted = mockWeeklyStatus[index];
+        const isToday = index === currentDayIndex;
         
-        const getTomatoSVG = (isFilled) => `
-            <svg viewBox="0 0 100 100" class="tomato-svg ${isFilled ? 'tomato-filled' : 'tomato-empty'}">
-                <path class="t-leaf" d="M50 15 Q40 5 30 20 Q45 25 50 20 Q55 25 70 20 Q60 5 50 15 Z" />
-                <path class="t-body" d="M50 25 C80 25 90 50 85 75 C80 95 60 95 50 90 C40 95 20 95 15 75 C10 50 20 25 50 25 Z" />
-            </svg>
+        const node = document.createElement('div');
+        node.className = `day-node ${isToday ? 'active' : ''}`;
+        node.innerHTML = `
+            <div class="tomato-icon">${getTomatoSVG(isCompleted)}</div>
+            <span class="day-label">${day}</span>
         `;
-
-        days.forEach((day, index) => {
-            const isCompleted = mockStreakData[index];
-            const isToday = index === todayIndex;
-            streakContainer.innerHTML += `
-                <div class="streak-day ${isToday ? 'active' : ''}">
-                    ${getTomatoSVG(isCompleted)}
-                    <span class="streak-label">${day}</span>
-                </div>
-            `;
-        });
-    }
-
-    // --- C. 產生專注熱力田 ---
-    const heatmapGrid = document.getElementById('heatmap-grid');
-    if (heatmapGrid) {
-        heatmapGrid.innerHTML = '';
-        // 產生半年份 (26週 x 7天 = 182天) 的方格
-        const totalDays = 26 * 7; 
-        
-        for (let i = 0; i < totalDays; i++) {
-            const cell = document.createElement('div');
-            // 隨機產生假資料來呈現田地的顏色錯落感
-            // 等級 0: 未專注 (預設土壤色), 1~4: 專注等級
-            const randomLevel = Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0;
-            
-            cell.className = `heatmap-cell ${randomLevel > 0 ? 'level-' + randomLevel : ''}`;
-            heatmapGrid.appendChild(cell);
-        }
-    }
+        vineNodesEl.appendChild(node);
+    });
 }
 
-// 頁面載入時初始化成就畫面
+// 修改原有的 runLoopTimer 中的完成邏輯，讓計時結束時也能更新收成畫面
+// 在你的 runLoopTimer 的 if(isWorkMode) 裡面，儲存完任務時間後，加上這行：
+// updateHarvestUI();
+
+// 啟動時立刻渲染一次收成畫面
 document.addEventListener('DOMContentLoaded', () => {
-    updateAchievementsUI();
+    updateHarvestUI();
 });
+}
