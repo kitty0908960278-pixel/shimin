@@ -321,24 +321,18 @@ function changeOutfit(targetOutfitId) {
     });
 }
 
-// 綁定換裝商店裡卡片的點擊事件 (已移除 alert 通知)
+// 綁定換裝商店裡卡片的點擊事件 (每次點擊都扣 10 金幣並換裝)
 document.querySelectorAll('.shop-item').forEach((item, index) => {
     const outfitMap = { 0: 'dresstest', 1: 'dresstest2' };
     item.addEventListener('click', () => {
         if (!outfitMap[index]) return;
-        const itemPrice = 50;
+        const itemPrice = 10; // 每次扣 10 金幣
         const targetOutfit = outfitMap[index];
 
-        if (unlockedItems.includes(index)) {
-            changeOutfit(targetOutfit);
-            return;
-        }
-        
+        // 每次點擊都嘗試扣除 10 金幣並換裝
         if (deductCoins(itemPrice)) {
-            unlockedItems.push(index);
-            localStorage.setItem('pomodoro_unlocked', JSON.stringify(unlockedItems));
             changeOutfit(targetOutfit);
-            item.style.borderColor = 'var(--primary)';
+            alert('成功花費 10 金幣換裝！'); // 可選擇性保留提示，讓扣款更有感
         }
     });
 });
