@@ -77,7 +77,6 @@ function updateCoinDisplay() {
     });
 }
 
-
 // ==========================================
 // 3. 全自動循環計時、暫停與任務累計時間核心
 // ==========================================
@@ -117,7 +116,7 @@ function runLoopTimer() {
         } else {
             clearInterval(timerId);
             
-            // 🔔 修改：加入鈴聲開關判斷
+            // 🔔 加入鈴聲開關判斷
             if (isSoundOn) {
                 const alarmSound = document.getElementById('alarm-audio');
                 if (alarmSound) {
@@ -177,7 +176,42 @@ function runLoopTimer() {
         }
     }, 1000);
 }
-            
+
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerId);
+        isRunning = false;
+        isWorkMode = true;
+        if (startBtn) startBtn.innerText = "開始";
+        totalSeconds = workTimeSetting * 60;
+        remainingTomatoes = tomatoCountSetting;
+        updateTimerDisplay();
+        updateTomatoDisplayUI();
+    });
+}
+
+function updateTimerDisplay() {
+    if (totalSeconds < 0) totalSeconds = 0;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+    
+    if (timerDisplay) {
+        timerDisplay.innerText = `${formattedMinutes}:${formattedSeconds}`;
+    }
+}
+
+function updateTomatoDisplayUI() {
+    const settingCards = document.querySelectorAll('.setting-card');
+    if (settingCards.length >= 3) {
+        const tomatoValueEl = settingCards[2].querySelector('.setting-value');
+        if (tomatoValueEl) {
+            tomatoValueEl.innerText = remainingTomatoes;
+        }
+    }
+}
             // 🔔 修改：加入鈴聲開關判斷
             if (isSoundOn) {
                 const alarmSound = document.getElementById('alarm-audio');
