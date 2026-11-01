@@ -79,12 +79,19 @@ function updateCoinDisplay() {
 
 
 // ==========================================
-// 3. 全自動循環計時與任務累計時間核心
+// 3. 全自動循環計時、暫停與任務累計時間核心
 // ==========================================
 if (startBtn) {
     startBtn.addEventListener('click', () => {
-        if (isRunning) return;
-        
+        // 如果目前正在計時中，點擊代表要「暫停」
+        if (isRunning) {
+            clearInterval(timerId); // 清除計時器
+            isRunning = false;
+            startBtn.innerText = isWorkMode ? "繼續專注" : "繼續休息";
+            return;
+        }
+
+        // 如果目前是暫停或尚未開始，點擊代表要「開始/繼續」
         if (remainingTomatoes <= 0) {
             remainingTomatoes = tomatoCountSetting;
             isWorkMode = true;
@@ -92,7 +99,7 @@ if (startBtn) {
         }
 
         isRunning = true;
-        startBtn.innerText = isWorkMode ? "專注計時中..." : "休息中...";
+        startBtn.innerText = "暫停"; // 計時中顯示「暫停」
 
         targetTime = Date.now() + totalSeconds * 1000;
         runLoopTimer();
@@ -109,6 +116,67 @@ function runLoopTimer() {
             updateTimerDisplay();
         } else {
             clearInterval(timerId);
+            
+            // 🔔 修改：加入鈴聲開關判斷
+            if (isSoundOn) {
+                const alarmSound = document.getElementById('alarm-audio');
+                if (alarmSound) {
+                    alarmSound.currentTime = 0; // 讓音樂從頭開始播
+                    alarmSound.play().catch(error => {
+                        console.log("播放失敗原因：", error);
+                    });
+                }
+            }
+
+            if (isWorkMode) {
+                const earnedCoins = calculateCoinsForWork(workTimeSetting);
+                addCoins(earnedCoins); 
+                
+                if (activeTaskId) {
+                    tasks = tasks.map(task => {
+                        if (task.id == activeTaskId) {
+                            return { ...task, accumulatedMinutes: (task.accumulatedMinutes || 0) + workTimeSetting };
+                        }
+                        return task;
+                    });
+                    saveAndRenderTasks();
+                }
+
+                if (remainingTomatoes > 0) {
+                    remainingTomatoes--;
+                    updateTomatoDisplayUI();
+                }
+
+                isWorkMode = false;
+                totalSeconds = breakTimeSetting * 60;
+                startBtn.innerText = "休息中...";
+                updateTimerDisplay();
+
+                targetTime = Date.now() + totalSeconds * 1000;
+                runLoopTimer();
+
+            } else {
+                if (remainingTomatoes > 0) {
+                    isWorkMode = true;
+                    totalSeconds = workTimeSetting * 60;
+                    startBtn.innerText = "專注計時中...";
+                    updateTimerDisplay();
+
+                    targetTime = Date.now() + totalSeconds * 1000;
+                    runLoopTimer();
+                } else {
+                    isRunning = false;
+                    startBtn.innerText = "開始";
+                    isWorkMode = true;
+                    remainingTomatoes = tomatoCountSetting;
+                    totalSeconds = workTimeSetting * 60;
+                    updateTimerDisplay();
+                    updateTomatoDisplayUI();
+                }
+            }
+        }
+    }, 1000);
+}
             
             // 🔔 修改：加入鈴聲開關判斷
             if (isSoundOn) {
