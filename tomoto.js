@@ -34,8 +34,19 @@ let tasks = JSON.parse(localStorage.getItem('pomodoro_tasks')) || [];
 let unlockedItems = JSON.parse(localStorage.getItem('pomodoro_unlocked')) || [0]; 
 let activeTaskId = localStorage.getItem('pomodoro_active_task') || null;
 let currentActiveOutfit = localStorage.getItem('pomodoro_active_outfit') || 'dresstest';
+let dailyFocusMilliseconds = JSON.parse(localStorage.getItem('pomodoro_daily_focus_ms')) || {};
+let dailyTaskFocusMilliseconds = JSON.parse(localStorage.getItem('pomodoro_daily_task_focus_ms')) || {};
+let focusTrackingStartedAt = null;
+let focusTrackingTaskId = null;
+let heatmapPageIndex = null;
+let heatmapPageCount = 0;
+let heatmapFollowLatestPage = true;
+let harvestPageIndex = 0;
+let harvestPageCount = 0;
+let harvestFollowLatestPage = false;
 
 // 初始化渲染
+migrateLegacyDailyTaskFocus();
 updateCoinDisplay();
 renderTasks();
 updateTimerDisplay();
@@ -85,6 +96,9 @@ if (startBtn) {
     startBtn.addEventListener('click', () => {
         // 如果目前正在計時中，點擊代表要「暫停」
         if (isRunning) {
+            if (isWorkMode) {
+                recordFocusUntil(Math.min(Date.now(), targetTime));
+            }
             clearInterval(timerId); // 清除計時器
             isRunning = false;
             startBtn.innerText = isWorkMode ? "繼續專注" : "繼續休息";
@@ -101,7 +115,10 @@ if (startBtn) {
         isRunning = true;
         startBtn.innerText = "暫停"; // 計時中顯示「暫停」
 
-        targetTime = Date.now() + totalSeconds * 1000;
+        const now = Date.now();
+        targetTime = now + totalSeconds * 1000;
+        focusTrackingStartedAt = isWorkMode ? now : null;
+        focusTrackingTaskId = isWorkMode ? activeTaskId : null;
         runLoopTimer();
     });
 }
@@ -111,6 +128,10 @@ function runLoopTimer() {
         const now = Date.now();
         const remainingMs = targetTime - now;
         totalSeconds = Math.ceil(remainingMs / 1000);
+
+        if (isWorkMode) {
+            recordFocusUntil(Math.min(now, targetTime));
+        }
 
         if (totalSeconds > 0) {
             updateTimerDisplay();
@@ -128,6 +149,8 @@ function runLoopTimer() {
             }
 
             if (isWorkMode) {
+                focusTrackingStartedAt = null;
+                focusTrackingTaskId = null;
                 const earnedCoins = calculateCoinsForWork(workTimeSetting);
                 addCoins(earnedCoins); 
                 
@@ -161,7 +184,10 @@ function runLoopTimer() {
                     startBtn.innerText = "專注計時中...";
                     updateTimerDisplay();
 
-                    targetTime = Date.now() + totalSeconds * 1000;
+                    const focusStartTime = Date.now();
+                    targetTime = focusStartTime + totalSeconds * 1000;
+                    focusTrackingStartedAt = focusStartTime;
+                    focusTrackingTaskId = activeTaskId;
                     runLoopTimer();
                 } else {
                     isRunning = false;
@@ -179,8 +205,13 @@ function runLoopTimer() {
 
 if (resetBtn) {
     resetBtn.addEventListener('click', () => {
+        if (isRunning && isWorkMode) {
+            recordFocusUntil(Math.min(Date.now(), targetTime));
+        }
         clearInterval(timerId);
         isRunning = false;
+        focusTrackingStartedAt = null;
+        focusTrackingTaskId = null;
         isWorkMode = true;
         if (startBtn) startBtn.innerText = "開始";
         totalSeconds = workTimeSetting * 60;
@@ -188,6 +219,56 @@ if (resetBtn) {
         updateTimerDisplay();
         updateTomatoDisplayUI();
     });
+}
+
+function getLocalDateKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function migrateLegacyDailyTaskFocus() {
+    const migrationKey = 'pomodoro_daily_task_focus_migrated_v1';
+    if (localStorage.getItem(migrationKey) === 'true') return;
+
+    const todayKey = getLocalDateKey(new Date());
+    if (!dailyTaskFocusMilliseconds[todayKey]) dailyTaskFocusMilliseconds[todayKey] = {};
+    tasks.forEach(task => {
+        const taskKey = String(task.id);
+        if (dailyTaskFocusMilliseconds[todayKey][taskKey] !== undefined) return;
+        const accumulatedMinutes = Number(task.accumulatedMinutes) || 0;
+        dailyTaskFocusMilliseconds[todayKey][taskKey] = Math.max(0, accumulatedMinutes) * 60000;
+    });
+    localStorage.setItem('pomodoro_daily_task_focus_ms', JSON.stringify(dailyTaskFocusMilliseconds));
+    localStorage.setItem(migrationKey, 'true');
+}
+
+function recordFocusUntil(endTimestamp) {
+    if (focusTrackingStartedAt === null || endTimestamp <= focusTrackingStartedAt) return;
+
+    let intervalStart = focusTrackingStartedAt;
+    while (intervalStart < endTimestamp) {
+        const date = new Date(intervalStart);
+        const nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
+        const intervalEnd = Math.min(endTimestamp, nextDay);
+        const dateKey = getLocalDateKey(date);
+
+        dailyFocusMilliseconds[dateKey] = (dailyFocusMilliseconds[dateKey] || 0) + intervalEnd - intervalStart;
+        if (focusTrackingTaskId !== null) {
+            if (!dailyTaskFocusMilliseconds[dateKey]) dailyTaskFocusMilliseconds[dateKey] = {};
+            const taskKey = String(focusTrackingTaskId);
+            dailyTaskFocusMilliseconds[dateKey][taskKey] =
+                (dailyTaskFocusMilliseconds[dateKey][taskKey] || 0) + intervalEnd - intervalStart;
+        }
+        intervalStart = intervalEnd;
+    }
+
+    focusTrackingStartedAt = endTimestamp;
+    localStorage.setItem('pomodoro_daily_focus_ms', JSON.stringify(dailyFocusMilliseconds));
+    localStorage.setItem('pomodoro_daily_task_focus_ms', JSON.stringify(dailyTaskFocusMilliseconds));
+    updateHeatmapUI();
+    updateTodaysHarvestUI();
 }
 
 function updateTimerDisplay() {
@@ -241,6 +322,7 @@ if (addTaskBtn) {
 function saveAndRenderTasks() {
     localStorage.setItem('pomodoro_tasks', JSON.stringify(tasks));
     renderTasks();
+    updateTodaysHarvestUI();
 }
 
 function renderTasks() {
@@ -284,12 +366,11 @@ window.deleteTask = function(id) {
     saveAndRenderTasks();
 };
 
-window.selectActiveTask = function(id, text) {
+window.selectActiveTask = function(id) {
     activeTaskId = id;
     localStorage.setItem('pomodoro_active_task', activeTaskId);
     updateActiveTaskUI();
     renderTasks();
-    alert(`已鎖定專注任務：「${text}」！`);
 };
 
 function updateActiveTaskUI() {
@@ -313,6 +394,11 @@ function updateActiveTaskUI() {
 function changeOutfit(targetOutfitId) {
     currentActiveOutfit = targetOutfitId;
     localStorage.setItem('pomodoro_active_outfit', targetOutfitId);
+
+    const shopOutfits = ['dresstest', 'dresstest2'];
+    document.querySelectorAll('.shop-item').forEach((item, index) => {
+        item.classList.toggle('selected', shopOutfits[index] === targetOutfitId);
+    });
 
     const allOutfits = ['dresstest', 'dresstest2'];
     allOutfits.forEach(outfitId => {
@@ -371,10 +457,10 @@ if (settingCards.length >= 3) {
     const breakBtns = settingCards[1].querySelectorAll('.circle-btn');
     if (breakBtns.length >= 2) {
         breakBtns[0].addEventListener('click', () => {
-            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakValueEl; }
+            if (breakTimeSetting > 1) { breakTimeSetting--; breakValueEl.innerText = breakTimeSetting; }
         });
         breakBtns[1].addEventListener('click', () => {
-            breakTimeSetting++; breakValueEl.innerText = breakValueEl;
+            breakTimeSetting++; breakValueEl.innerText = breakTimeSetting;
         });
     }
 
@@ -484,84 +570,282 @@ function getTomatoSVG(isFilled, extraClass = "") {
     }
 }
 
-function updateSketchAchievementsUI() {
-    const mockTodayData = {
-        totalHours: 4.1,
-        subjects: [
-            { name: '經濟學期中複習', accumulatedMinutes: 138 }, 
-            { name: 'Java 程式設計', accumulatedMinutes: 78 },  
-            { name: '英文單字背誦', accumulatedMinutes: 30 }    
-        ]
+function updateWeeklyCheckInUI() {
+    const streakContainer = document.getElementById('streak-tomatoes-container');
+    if (!streakContainer) return;
+
+    streakContainer.innerHTML = '';
+    const days = ['一', '二', '三', '四', '五', '六', '日'];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+
+    days.forEach((day, index) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + index);
+        const dateKey = getLocalDateKey(date);
+        const isDone = (dailyFocusMilliseconds[dateKey] || 0) > 0;
+        const item = document.createElement('div');
+        item.className = 'streak-day-item';
+        item.innerHTML = `
+            ${getTomatoSVG(isDone, 'week-tomato-icon')}
+            <span class="streak-day-label">${day}</span>
+        `;
+        streakContainer.appendChild(item);
+    });
+}
+
+function updateHeatmapUI() {
+    updateWeeklyCheckInUI();
+    const heatmapGrid = document.getElementById('heatmap-grid');
+    if (!heatmapGrid) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = getLocalDateKey(today);
+    const todayMilliseconds = dailyFocusMilliseconds[todayKey] || 0;
+    updateTodayFocusDisplay(todayMilliseconds);
+
+    const activeDateKeys = Object.keys(dailyFocusMilliseconds)
+        .filter(dateKey => dailyFocusMilliseconds[dateKey] > 0)
+        .sort();
+    const getDayNumber = dateKey => {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        return Date.UTC(year, month - 1, day) / 86400000;
+    };
+    const addDays = (dateKey, days) => {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const date = new Date(year, month - 1, day + days);
+        return getLocalDateKey(date);
     };
 
-    const totalTimeEl = document.getElementById('today-time-val');
-    if (totalTimeEl) totalTimeEl.innerText = mockTodayData.totalHours;
+    const sessions = [];
+    activeDateKeys.forEach(dateKey => {
+        const currentSession = sessions[sessions.length - 1];
+        if (!currentSession || getDayNumber(dateKey) - getDayNumber(currentSession.lastActivityDate) > 7) {
+            sessions.push({ startDate: dateKey, lastActivityDate: dateKey });
+        } else {
+            currentSession.lastActivityDate = dateKey;
+        }
+    });
+
+    const pages = [];
+    sessions.forEach(session => {
+        const daysSinceLastActivity = getDayNumber(todayKey) - getDayNumber(session.lastActivityDate);
+        const sessionEndDate = daysSinceLastActivity >= 0 && daysSinceLastActivity <= 7
+            ? todayKey
+            : addDays(session.lastActivityDate, 7);
+        const sessionDayCount = getDayNumber(sessionEndDate) - getDayNumber(session.startDate) + 1;
+        const sessionPageCount = Math.ceil(sessionDayCount / 28);
+        for (let page = 0; page < sessionPageCount; page++) {
+            const pageStartDate = addDays(session.startDate, page * 28);
+            const pageEndDate = addDays(pageStartDate, 27);
+            pages.push({
+                startDate: pageStartDate,
+                visibleEndDate: getDayNumber(sessionEndDate) < getDayNumber(pageEndDate) ? sessionEndDate : pageEndDate
+            });
+        }
+    });
+
+    const previousButton = document.getElementById('heatmap-prev');
+    const nextButton = document.getElementById('heatmap-next');
+    const pageNumber = document.getElementById('heatmap-page-number');
+    if (pages.length === 0) {
+        heatmapPageIndex = null;
+        heatmapPageCount = 0;
+        heatmapGrid.innerHTML = '<div class="heatmap-empty">開始專注後會建立第一頁日曆</div>';
+        if (pageNumber) pageNumber.innerText = '0 / 0';
+        if (previousButton) previousButton.disabled = true;
+        if (nextButton) nextButton.disabled = true;
+        return;
+    }
+
+    heatmapPageCount = pages.length;
+    if (heatmapPageIndex === null || heatmapFollowLatestPage) {
+        heatmapPageIndex = pages.length - 1;
+    } else {
+        heatmapPageIndex = Math.min(heatmapPageIndex, pages.length - 1);
+    }
+
+    const currentPage = pages[heatmapPageIndex];
+    heatmapGrid.innerHTML = '';
+    for (let index = 0; index < 28; index++) {
+        const dateKey = addDays(currentPage.startDate, index);
+        const focusMilliseconds = dailyFocusMilliseconds[dateKey] || 0;
+        const focusMinutes = Math.floor(focusMilliseconds / 60000);
+        const hours = Math.floor(focusMinutes / 60);
+        const minutes = focusMinutes % 60;
+        const duration = `${hours}:${String(minutes).padStart(2, '0')}`;
+
+        let level = 0;
+        if (focusMilliseconds > 10 * 60 * 1000 && focusMilliseconds <= 60 * 60 * 1000) level = 1;
+        else if (focusMilliseconds > 60 * 60 * 1000 && focusMilliseconds < 3 * 60 * 60 * 1000) level = 2;
+        else if (focusMilliseconds >= 3 * 60 * 60 * 1000 && focusMilliseconds <= 5 * 60 * 60 * 1000) level = 3;
+        else if (focusMilliseconds > 5 * 60 * 60 * 1000) level = 4;
+
+        const cell = document.createElement('div');
+        cell.className = `heatmap-cell-mini level-${level}`;
+        cell.title = `${dateKey}：專注 ${duration}`;
+
+        if (focusMilliseconds > 0) {
+            const dateLabel = document.createElement('span');
+            dateLabel.className = 'heatmap-date';
+            dateLabel.innerText = String(index + 1);
+
+            const durationLabel = document.createElement('span');
+            durationLabel.className = 'heatmap-duration';
+            durationLabel.innerText = duration;
+
+            cell.append(dateLabel, durationLabel);
+        }
+
+        heatmapGrid.appendChild(cell);
+    }
+
+    if (pageNumber) pageNumber.innerText = `第 ${heatmapPageIndex + 1} 頁 / ${pages.length} 頁`;
+    if (previousButton) previousButton.disabled = heatmapPageIndex === 0;
+    if (nextButton) nextButton.disabled = heatmapPageIndex === pages.length - 1;
+}
+
+function formatFocusDuration(milliseconds) {
+    const totalMinutes = Math.floor(milliseconds / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}:${String(minutes).padStart(2, '0')}`;
+}
+
+function updateTodayFocusDisplay(milliseconds) {
+    const totalMinutes = Math.floor(milliseconds / 60000);
+    const hoursEl = document.getElementById('today-hours-val');
+    const minutesEl = document.getElementById('today-minutes-val');
+    if (hoursEl) hoursEl.innerText = Math.floor(totalMinutes / 60);
+    if (minutesEl) minutesEl.innerText = String(totalMinutes % 60).padStart(2, '0');
+}
+
+function updateTodaysHarvestUI() {
+    const todayKey = getLocalDateKey(new Date());
+    updateTodayFocusDisplay(dailyFocusMilliseconds[todayKey] || 0);
 
     const subjectListEl = document.getElementById('today-subjects-list');
-    if (subjectListEl) {
-        subjectListEl.innerHTML = '';
-        mockTodayData.subjects.forEach(sub => {
-            const tomatoCount = Math.floor(sub.accumulatedMinutes / 25) || 1; 
-            let tomatoesHTML = '';
-            for (let i = 0; i < tomatoCount; i++) {
-                tomatoesHTML += getTomatoSVG(true, 'mini-tomato');
-            }
+    if (!subjectListEl) return;
 
-            const subjectHours = (sub.accumulatedMinutes / 60).toFixed(1);
+    const todayTasks = dailyTaskFocusMilliseconds[todayKey] || {};
+    const taskEntries = tasks
+        .map(task => ({
+            task,
+            milliseconds: todayTasks[String(task.id)] || 0
+        }))
+        .filter(entry => entry.milliseconds > 0);
 
-            subjectListEl.innerHTML += `
-                <li class="sketch-subject-row">
-                    <div class="sub-row-top">
-                        <span class="sub-name"><i class="fa-solid fa-leaf" style="color: #A9E28F;"></i> ${sub.name}</span>
-                        <span class="sub-time">${subjectHours} h</span>
-                    </div>
-                    <div class="sub-visual-tomatoes">
-                        ${tomatoesHTML}
-                    </div>
-                </li>
-            `;
-        });
+    harvestPageCount = Math.ceil(taskEntries.length / 3);
+    if (harvestFollowLatestPage) {
+        harvestPageIndex = Math.max(0, harvestPageCount - 1);
+    } else {
+        harvestPageIndex = Math.min(harvestPageIndex, Math.max(0, harvestPageCount - 1));
     }
 
-    const streakContainer = document.getElementById('streak-tomatoes-container');
-    if (streakContainer) {
-        streakContainer.innerHTML = '';
-        const days = ['一', '二', '三', '四', '五', '六', '日'];
-        const weeklyStatus = [true, true, true, false, true, false, false]; 
-        
-        days.forEach((day, index) => {
-            const isDone = weeklyStatus[index];
-            const item = document.createElement('div');
-            item.className = 'streak-day-item';
-            item.innerHTML = `
-                ${getTomatoSVG(isDone, 'week-tomato-icon')}
-                <span class="streak-day-label">${day}</span>
-            `;
-            streakContainer.appendChild(item);
-        });
+    subjectListEl.innerHTML = '';
+    const pageEntries = taskEntries.slice(harvestPageIndex * 3, harvestPageIndex * 3 + 3);
+    if (pageEntries.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.className = 'harvest-empty';
+        emptyItem.innerText = '待辦清單尚無項目';
+        subjectListEl.appendChild(emptyItem);
     }
 
-    const heatmapGrid = document.getElementById('heatmap-grid');
-    if (heatmapGrid) {
-        heatmapGrid.innerHTML = '';
-        const totalCells = 28; 
-        const mockLevels = [
-            0, 1, 2, 3, 4, 2, 0,
-            1, 3, 4, 2, 1, 3, 4,
-            2, 4, 3, 1, 0, 2, 3,
-            4, 2, 1, 3, 4, 1, 0
-        ];
-        
-        for (let i = 0; i < totalCells; i++) {
-            const level = mockLevels[i] || 0;
-            const cell = document.createElement('div');
-            cell.className = `heatmap-cell-mini ${level > 0 ? 'level-' + level : ''}`;
-            cell.title = `倒數第 ${28 - i} 天：收成等級 ${level}`;
-            heatmapGrid.appendChild(cell);
+    pageEntries.forEach(({ task, milliseconds }) => {
+        const row = document.createElement('li');
+        row.className = 'sketch-subject-row';
+
+        const topRow = document.createElement('div');
+        topRow.className = 'sub-row-top';
+
+        const name = document.createElement('span');
+        name.className = 'sub-name';
+        name.innerText = task.text;
+
+        const time = document.createElement('span');
+        time.className = 'sub-time';
+        const totalMinutes = Math.floor(milliseconds / 60000);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        time.innerText = hours > 0 ? `${hours} 小時 ${minutes} 分` : `${minutes} 分`;
+
+        topRow.append(name, time);
+
+        const tomatoRow = document.createElement('div');
+        tomatoRow.className = 'sub-visual-tomatoes';
+        const tomatoCount = Math.min(Math.floor(milliseconds / (10 * 60 * 1000)), 15);
+        for (let index = 0; index < tomatoCount; index++) {
+            const tomato = document.createElement('span');
+            tomato.className = 'harvest-tomato';
+            tomato.setAttribute('aria-label', '專注滿10分鐘');
+            tomatoRow.appendChild(tomato);
         }
+
+        row.append(topRow, tomatoRow);
+        subjectListEl.appendChild(row);
+    });
+
+    const previousButton = document.getElementById('harvest-prev');
+    const nextButton = document.getElementById('harvest-next');
+    const pageNumber = document.getElementById('harvest-page-number');
+    if (pageNumber) {
+        pageNumber.innerText = harvestPageCount > 0
+            ? `第 ${harvestPageIndex + 1} 頁 / ${harvestPageCount} 頁`
+            : '0 / 0';
     }
+    if (previousButton) previousButton.disabled = harvestPageIndex === 0;
+    if (nextButton) nextButton.disabled = harvestPageIndex >= harvestPageCount - 1;
+}
+
+function updateSketchAchievementsUI() {
+    updateTodaysHarvestUI();
+    updateHeatmapUI();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     updateSketchAchievementsUI();
+
+    const previousButton = document.getElementById('heatmap-prev');
+    const nextButton = document.getElementById('heatmap-next');
+    const harvestPreviousButton = document.getElementById('harvest-prev');
+    const harvestNextButton = document.getElementById('harvest-next');
+    if (previousButton) {
+        previousButton.addEventListener('click', () => {
+            if (heatmapPageIndex > 0) {
+                heatmapPageIndex--;
+                heatmapFollowLatestPage = false;
+                updateHeatmapUI();
+            }
+        });
+    }
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            if (heatmapPageIndex < heatmapPageCount - 1) {
+                heatmapPageIndex++;
+                heatmapFollowLatestPage = heatmapPageIndex === heatmapPageCount - 1;
+                updateHeatmapUI();
+            }
+        });
+    }
+    if (harvestPreviousButton) {
+        harvestPreviousButton.addEventListener('click', () => {
+            if (harvestPageIndex > 0) {
+                harvestPageIndex--;
+                harvestFollowLatestPage = false;
+                updateTodaysHarvestUI();
+            }
+        });
+    }
+    if (harvestNextButton) {
+        harvestNextButton.addEventListener('click', () => {
+            if (harvestPageIndex < harvestPageCount - 1) {
+                harvestPageIndex++;
+                harvestFollowLatestPage = harvestPageIndex === harvestPageCount - 1;
+                updateTodaysHarvestUI();
+            }
+        });
+    }
 });
