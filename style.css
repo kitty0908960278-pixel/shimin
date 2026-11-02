@@ -21,10 +21,13 @@ body {
     background-color: #e5e5e5;
     display: flex; justify-content: center; align-items: center;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .app-container {
-    width: 1920px; height: 900px;
+    width: min(1920px, 100vw);
+    height: min(900px, 100vh);
+    height: min(900px, 100dvh);
     background-color: var(--bg-color);
     display: flex; overflow: hidden; position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -32,7 +35,7 @@ body {
 
 /* ================= 左側欄樣式 ================= */
 .sidebar {
-    width: 320px; background-color: var(--sidebar-bg);
+    width: clamp(220px, 16.67vw, 320px); flex: 0 0 clamp(220px, 16.67vw, 320px); background-color: var(--sidebar-bg);
     box-shadow: 4px 0 15px rgba(167, 42, 0, 0.05);
     display: flex; flex-direction: column;
     padding: 40px 30px; z-index: 10;
@@ -55,12 +58,12 @@ body {
 .coin-value { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 24px; font-weight: 900; margin-left: auto; }
 
 /* ================= 頁面切換機制 ================= */
-.main-content { flex: 1; position: relative; overflow: hidden; }
-.page-section { display: none; width: 100%; height: 100%; animation: fadeIn 0.4s ease forwards; }
+.main-content { flex: 1; min-width: 0; min-height: 0; position: relative; overflow: auto; }
+.page-section { display: none; width: 100%; min-height: 100%; animation: fadeIn 0.4s ease forwards; }
 
-#page-timer.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; position: relative; }
-#page-todo.active, #page-achievements.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 140px; }
-#page-shop.active { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 40px; }
+#page-timer.active { display: flex; min-height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: clamp(6px, 1vh, 12px) 16px; position: relative; }
+#page-todo.active, #page-achievements.active { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: clamp(24px, 8vh, 100px) clamp(20px, 4vw, 60px) 32px; }
+#page-shop.active { display: flex; min-height: 100%; flex-direction: row; align-items: center; justify-content: center; gap: clamp(16px, 2vw, 40px); padding: 24px; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(15px); }
@@ -78,7 +81,7 @@ body {
 
 /* ================= 頁面 1：專注計時 ================= */
 .avatar-box { 
-    width: 460px; height: 460px; 
+    width: min(460px, 30vh); height: min(460px, 30vh); 
     background-color: var(--card-bg-alt); 
     box-shadow: var(--shadow-soft); 
     border-radius: 32px; 
@@ -95,15 +98,15 @@ body {
     padding: 6px 20px;
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-    margin: 25px 0; 
+    margin: clamp(6px, 1.5vh, 16px) 0; 
 }
 #active-task-name { color: var(--primary); }
 
-.timer-display { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: 128px; font-weight: 900; line-height: 1; margin: 0 0 30px 0; }
-.control-buttons { display: flex; gap: 30px; margin-bottom: 30px; }
-.control-buttons .btn { width: 200px; height: 74px; }
+.timer-display { color: var(--primary); font-family: 'Nunito', sans-serif; font-size: clamp(64px, 10vh, 112px); font-weight: 900; line-height: 1; margin: 0 0 clamp(8px, 2vh, 20px) 0; }
+.control-buttons { display: flex; gap: clamp(10px, 2vw, 30px); margin-bottom: clamp(8px, 2vh, 20px); }
+.control-buttons .btn { width: clamp(140px, 15vw, 200px); height: clamp(54px, 8vh, 74px); }
 .btn-secondary { background-color: var(--card-bg-alt); color: var(--primary); border: 3px solid var(--primary-light); }
-.settings-panel { width: 530px; background-color: var(--card-bg-alt); box-shadow: var(--shadow-soft); border-radius: 32px; padding: 25px 30px; display: flex; flex-direction: column; gap: 20px; }
+.settings-panel { width: min(530px, 100%); background-color: var(--card-bg-alt); box-shadow: var(--shadow-soft); border-radius: 32px; padding: clamp(14px, 2vh, 22px) clamp(16px, 2.5vw, 30px); display: flex; flex-direction: column; gap: clamp(10px, 1.5vh, 16px); }
 .settings-header { display: flex; justify-content: space-between; align-items: center; }
 .settings-title { color: var(--text-muted); font-size: 18px; font-weight: 700; }
 .btn-apply { background-color: #FAEBD4; color: var(--primary); border: none; border-radius: 50px; padding: 6px 16px; font-weight: 700; cursor: pointer; }
@@ -116,9 +119,9 @@ body {
 
 /* 右下角懸浮鈴聲按鈕 */
 .sound-floating-btn {
-    position: absolute;
-    bottom: 40px;
-    right: 40px;
+    position: static;
+    align-self: flex-end;
+    margin-top: clamp(8px, 1.5vh, 14px);
     background-color: var(--card-bg-alt);
     color: var(--primary);
     border: 3px solid var(--primary-light);
@@ -140,14 +143,14 @@ body {
 
 
 /* ================= 頁面 2：待辦清單 ================= */
-.todo-wrapper { width: 760px; display: flex; flex-direction: column; gap: 15px; }
+.todo-wrapper { width: min(760px, 100%); display: flex; flex-direction: column; gap: 15px; }
 .todo-input-row { display: flex; gap: 20px; align-items: stretch; margin-bottom: 15px; }
 .todo-input { flex: 1; height: 69px; background-color: var(--card-bg); border-radius: 32px; border: 3px solid var(--primary-light); padding: 0 32px; font-size: 20px; color: var(--text-gray); outline: none; }
 .btn-add { width: 90px; height: 69px; background-color: var(--primary); border-radius: 20px; box-shadow: var(--shadow-soft); border: none; color: #FFF; font-size: 24px; cursor: pointer; }
 .todo-list { display: flex; flex-direction: column; gap: 20px; list-style: none; }
 
 
-.todo-card { height: 143px; background-color: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow-soft); display: flex; align-items: center; padding: 0 32px; gap: 15px; }
+.todo-card { min-height: 143px; background-color: var(--card-bg); border-radius: 32px; box-shadow: var(--shadow-soft); display: flex; align-items: center; padding: 20px 32px; gap: 15px; }
 .task-text { color: #857771; font-size: 24px; font-weight: 500; }
 .task-time-badge { 
     font-family: 'Nunito', sans-serif; 
@@ -187,8 +190,8 @@ body {
 
 
 /* ================= 頁面 3：換裝商店 ================= */
-.character-panel { display: flex; flex-direction: column; width: 486px; height: 650px; padding-top: 45px; }
-.shop-panel { width: 850px; height: 650px; background-color: var(--card-bg); border-radius: 32px; padding: 45px 50px; box-shadow: var(--shadow-soft); display: flex; flex-direction: column; }
+.character-panel { display: flex; flex-direction: column; width: min(486px, 40%); min-width: 0; height: min(650px, 82vh); padding-top: 20px; }
+.shop-panel { width: min(850px, 60%); height: min(650px, 82vh); min-width: 0; background-color: var(--card-bg); border-radius: 32px; padding: clamp(20px, 3vw, 45px) clamp(20px, 3vw, 50px); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; }
 .character-panel .section-title { margin-bottom: 40px; }
 .shop-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
 .shop-header .section-title { margin-bottom: 0; }
@@ -197,7 +200,8 @@ body {
 .filter-btn { background: transparent; border: none; color: var(--text-muted); font-size: 16px; font-weight: 500; padding: 8px 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
 .filter-btn.active { background-color: #FFF; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .shop-grid { display: flex; flex-wrap: wrap; gap: 30px; }
-.shop-item { width: 189px; height: 189px; background-color: #FEFEFE; border: 2px solid var(--primary-light); border-radius: 20px; cursor: pointer; transition: transform 0.2s; }
+.shop-item { width: 189px; height: 189px; background-color: #FEFEFE; border: 2px solid transparent; border-radius: 20px; cursor: pointer; transition: transform 0.2s; }
+.shop-item.selected { border-color: var(--primary); }
 .shop-item:hover { transform: scale(1.03); }
 
 /* ================= 頁面 4：手繪稿風格雙欄排版 (完美置中與上下留白) ================= */
@@ -210,7 +214,7 @@ body {
 }
 
 .achievements-wrapper.layout-sketch-col { 
-    width: 1100px; 
+    width: min(1100px, 100%); 
     display: flex; 
     flex-direction: column; 
     gap: 20px; 
@@ -296,6 +300,12 @@ body {
     gap: 14px; 
 }
 
+.harvest-empty {
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 12px 0;
+}
+
 .sketch-subject-row { 
     display: flex; 
     flex-direction: column;
@@ -336,6 +346,67 @@ body {
 .mini-tomato {
     width: 24px;
     height: 28px;
+}
+
+.harvest-tomato {
+    position: relative;
+    display: inline-block;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 28px;
+}
+
+.harvest-tomato::before {
+    position: absolute;
+    right: 3px;
+    bottom: 1px;
+    left: 3px;
+    height: 19px;
+    border-radius: 50%;
+    background: #E76F51;
+    content: "";
+}
+
+.harvest-tomato::after {
+    position: absolute;
+    top: 3px;
+    left: 9px;
+    width: 8px;
+    height: 6px;
+    border-radius: 8px 0;
+    background: #8FBF78;
+    content: "";
+    transform: rotate(-25deg);
+}
+
+.harvest-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.harvest-pagination button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #E8D9CE;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.harvest-pagination button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+#harvest-page-number {
+    min-width: 64px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
 }
 
 /* 右側雙欄容器 */
@@ -416,11 +487,40 @@ body {
     margin-bottom: 16px;
 }
 
+.heatmap-controls,
+.heatmap-pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.heatmap-pagination button {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #E8D9CE;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.heatmap-pagination button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+#heatmap-page-number {
+    min-width: 34px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
 /* 28格熱力田網格 */
 .heatmap-grid-28 { 
     display: grid; 
     grid-template-columns: repeat(7, 1fr); /* 7 欄 (一到日) */
-    grid-template-rows: repeat(4, 1fr);    /* 4 列 (4個星期) */
+    grid-template-rows: repeat(4, minmax(54px, 1fr));    /* 4 列 (4個星期) */
     gap: 10px; 
     width: 100%; 
     flex: 1;
@@ -432,17 +532,37 @@ body {
 .heatmap-cell-mini { 
     width: 100%; 
     height: 100%; 
-    max-width: 36px; 
-    max-height: 36px; 
-    aspect-ratio: 1; 
+    max-width: 72px; 
+    min-height: 54px;
     border-radius: 8px; 
-    background-color: #F4EBE1; 
+    background-color: #FFFFFF; 
+    border: 1px solid #E8D9CE;
     box-shadow: inset 0 -2px 4px rgba(0,0,0,0.05); 
     transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--text-dark);
 }
+
+.heatmap-date { font-size: 13px; line-height: 1; }
+.heatmap-duration { font-size: 11px; line-height: 1; font-weight: 700; }
 
 .heatmap-cell-mini:hover {
     transform: scale(1.1);
+}
+
+.heatmap-cell-mini.heatmap-cell-untracked {
+    visibility: hidden;
+}
+
+.heatmap-empty {
+    grid-column: 1 / -1;
+    align-self: center;
+    color: var(--text-muted);
+    font-size: 14px;
 }
 
 .heatmap-cell-mini.level-1 { background-color: #FDE3D2; }
@@ -470,11 +590,343 @@ body {
     border-radius: 3px; 
 }
 
-.legend-color.level-0 { background-color: #F4EBE1; }
+.legend-color.level-0 { background-color: #FFFFFF; border: 1px solid #E8D9CE; }
 .legend-color.level-1 { background-color: #FDE3D2; }
 .legend-color.level-2 { background-color: #F6A36F; }
 .legend-color.level-3 { background-color: #F08A5D; }
 .legend-color.level-4 { background-color: #E76F51; }
 svg {
     pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+    .sidebar {
+        padding: 28px 18px;
+    }
+
+    .nav-item {
+        padding: 16px 14px;
+        font-size: 15px;
+    }
+
+    #page-achievements.active {
+        padding-top: 32px;
+    }
+
+    .sketch-content-row {
+        flex-direction: column;
+    }
+
+    .sketch-right-col {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        align-items: stretch;
+    }
+
+    .sketch-right-bottom {
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 1100px) {
+    #page-shop.active {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        overflow-y: auto;
+    }
+
+    .character-panel,
+    .shop-panel {
+        width: 100%;
+        height: auto;
+    }
+
+    .character-panel {
+        padding-top: 0;
+    }
+
+    .character-preview-box {
+        height: min(40vh, 320px);
+        flex: none;
+    }
+
+    .shop-panel {
+        min-height: 420px;
+    }
+}
+
+@media (max-width: 760px) {
+    body {
+        align-items: stretch;
+        background-color: var(--bg-color);
+    }
+
+    .app-container {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        max-height: none;
+        flex-direction: column;
+    }
+
+    .sidebar {
+        display: grid;
+        width: 100%;
+        height: auto;
+        flex: 0 0 auto;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .logo-box {
+        display: none;
+    }
+
+    .nav-menu {
+        min-width: 0;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 2px;
+    }
+
+    .nav-item {
+        min-width: 0;
+        flex: 1;
+        justify-content: center;
+        gap: 4px;
+        padding: 9px 3px;
+        border-radius: 10px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .coin-display {
+        gap: 5px;
+        margin: 0;
+        padding: 6px;
+        border-width: 2px;
+    }
+
+    .coin-label {
+        display: none;
+    }
+
+    .icon-coin {
+        font-size: 15px;
+    }
+
+    .coin-value {
+        font-size: 14px;
+    }
+
+    .main-content {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    #page-timer.active {
+        justify-content: flex-start;
+        padding: 12px 14px 18px;
+    }
+
+    .avatar-box {
+        width: clamp(130px, 35vw, 230px);
+        height: clamp(130px, 35vw, 230px);
+        border-radius: 24px;
+    }
+
+    .task-banner {
+        max-width: 100%;
+        margin: 10px 0;
+        padding: 7px 12px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .timer-display {
+        margin-bottom: 12px;
+        font-size: clamp(54px, 16vw, 86px);
+    }
+
+    .control-buttons {
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .control-buttons .btn {
+        width: min(42vw, 170px);
+        height: 54px;
+        font-size: 15px;
+    }
+
+    .settings-panel {
+        padding: 14px;
+        border-radius: 22px;
+        gap: 12px;
+    }
+
+    .settings-title {
+        font-size: 15px;
+    }
+
+    .settings-cards {
+        gap: 7px;
+    }
+
+    .setting-card {
+        gap: 10px;
+        padding: 12px 4px;
+    }
+
+    .setting-label {
+        font-size: 11px;
+    }
+
+    .setting-controls {
+        gap: 5px;
+    }
+
+    .setting-value {
+        font-size: 20px;
+    }
+
+    .sound-floating-btn {
+        position: static;
+        align-self: flex-end;
+        margin-top: 12px;
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+
+    #page-todo.active,
+    #page-achievements.active {
+        padding: 24px 16px;
+    }
+
+    .todo-wrapper {
+        gap: 12px;
+    }
+
+    .section-title {
+        font-size: 26px;
+        margin-bottom: 12px;
+    }
+
+    .todo-input-row {
+        gap: 10px;
+    }
+
+    .todo-input {
+        height: 56px;
+        min-width: 0;
+        padding: 0 16px;
+        font-size: 15px;
+    }
+
+    .btn-add {
+        width: 60px;
+        height: 56px;
+        flex: 0 0 60px;
+    }
+
+    .todo-card {
+        min-height: 110px;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 22px;
+    }
+
+    .task-text {
+        min-width: 0;
+        flex: 1 1 calc(100% - 45px);
+        font-size: 18px;
+        overflow-wrap: anywhere;
+    }
+
+    .task-time-badge {
+        margin-left: 35px !important;
+        padding: 5px 9px;
+        font-size: 12px;
+    }
+
+    .task-focus-btn {
+        margin-left: 0 !important;
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+    .todo-card > button:last-child {
+        margin-left: auto !important;
+    }
+
+    #page-shop.active {
+        gap: 16px;
+        padding: 20px 16px;
+    }
+
+    .shop-header {
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .shop-panel {
+        min-height: 0;
+        padding: 20px;
+    }
+
+    .shop-grid {
+        gap: 12px;
+    }
+
+    .shop-item {
+        width: min(42vw, 160px);
+        height: min(42vw, 160px);
+    }
+
+    .sketch-left-card,
+    .sketch-right-top,
+    .sketch-right-bottom {
+        padding: 22px 18px;
+        border-radius: 24px;
+    }
+
+    .big-number {
+        font-size: clamp(40px, 12vw, 58px);
+    }
+
+    .big-unit {
+        font-size: 14px;
+    }
+
+    .sketch-right-col {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .heatmap-card-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .heatmap-controls {
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .heatmap-grid-28 {
+        grid-template-rows: repeat(4, minmax(44px, 1fr));
+        gap: 6px;
+    }
+
+    .heatmap-cell-mini {
+        min-height: 44px;
+        border-radius: 6px;
+    }
 }
