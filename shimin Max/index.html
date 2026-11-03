@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomodoro - 專注守護者</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- ================= 左側：共用導覽列 ================= -->
+        <aside class="sidebar">
+            <div class="logo-box"></div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="switchPage('page-timer', event)">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>專注計時</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('page-todo', event)">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>待辦清單</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('page-shop', event)">
+                    <i class="fa-solid fa-store"></i>
+                    <span>換裝商店</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchPage('page-achievements', event)">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>收成紀錄</span>
+                </a>
+            </nav>
+
+            <div class="coin-display">
+                <i class="fa-solid fa-coins icon-coin"></i>
+                <span class="coin-label">我的金幣</span>
+                <span class="coin-value">120</span>
+            </div>
+        </aside>
+
+        <!-- ================= 右側：主要內容切換區 ================= -->
+        <main class="main-content">
+            
+            <!-- 頁面 1：專注計時 -->
+            <div id="page-timer" class="page-section active">
+                <div id="avatar-svg-container" class="avatar-box">
+                    <!-- 多圖層 PNG 紙娃容器 (嚴格由下到上，每組先 mask 後 line) -->
+<div class="avatar-layered-container" style="position: relative; width: 100%; height: 100%;">
+    <!-- 1. 辮髮 (Hair Ext) -->
+    <img src="images/avatar/hair_ext_01_mask.png" class="avatar-layer avatar-mask" alt="hair ext mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 1;">
+    <img src="images/avatar/hair_ext_01_line.png" class="avatar-layer avatar-line" alt="hair ext line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 2;">
+
+    <!-- 2. 身體 (Body) -->
+    <img src="images/avatar/body_01_mask.png" class="avatar-layer avatar-mask" alt="body mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 3;">
+    <img src="images/avatar/body_01_line.png" class="avatar-layer avatar-line" alt="body line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 4;">
+
+    <!-- 3. 後發 (Hair Back) -->
+    <img src="images/avatar/hair_back_01_mask.png" class="avatar-layer avatar-mask" alt="hair back mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 5;">
+    <img src="images/avatar/hair_back_01_line.png" class="avatar-layer avatar-line" alt="hair back line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 6;">
+
+    <!-- 4. 呆毛 (Ahoge 02、03) -->
+    <img src="images/avatar/ahoge_02_mask.png" class="avatar-layer avatar-mask" alt="ahoge 02 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 7;">
+    <img src="images/avatar/ahoge_02_line.png" class="avatar-layer avatar-line" alt="ahoge 02 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 8;">
+    <img src="images/avatar/ahoge_03_mask.png" class="avatar-layer avatar-mask" alt="ahoge 03 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 9;">
+    <img src="images/avatar/ahoge_03_line.png" class="avatar-layer avatar-line" alt="ahoge 03 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10;">
+
+    <!-- 5. 五官：眼睛與嘴巴 (在瀏海後方) -->
+    <img src="images/avatar/eye01_mask.png" class="avatar-layer avatar-mask" alt="eye mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 11;">
+    <img src="images/avatar/eye01_line.png" class="avatar-layer avatar-line" alt="eye line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 12;">
+    <img src="images/avatar/mouth_01.png" class="avatar-layer avatar-line" alt="mouth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 13;">
+
+    <!-- 6. 瀏海 (Hair Front) -->
+    <img src="images/avatar/hair_front_01_mask.png" class="avatar-layer avatar-mask" alt="hair front mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 14;">
+    <img src="images/avatar/hair_front_01_line.png" class="avatar-layer avatar-line" alt="hair front line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 15;">
+
+    <!-- 7. 眉毛 (調整到瀏海的前面) -->
+    <img src="images/avatar/eyebrow_01.png" class="avatar-layer avatar-line" alt="eyebrow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 16;">
+
+    <!-- 8. 衣服 (Clothes Base) -->
+    <img src="images/avatar/clothes_base_02_mask.png" class="avatar-layer avatar-mask" alt="clothes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 17;">
+    <img src="images/avatar/clothes_base_02_line.png" class="avatar-layer avatar-line" alt="clothes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 18;">
+
+    <!-- 9. 外套 (Clothes Outer) -->
+    <img src="images/avatar/clothes_outer_01_mask.png" class="avatar-layer avatar-mask" alt="outer mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 19;">
+    <img src="images/avatar/clothes_outer_01_line.png" class="avatar-layer avatar-line" alt="outer line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 20;">
+
+    <!-- 10. 鞋子 (Shoes) -->
+    <img src="images/avatar/shoes_01_mask.png" class="avatar-layer avatar-mask" alt="shoes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 21;">
+    <img src="images/avatar/shoes_01_line.png" class="avatar-layer avatar-line" alt="shoes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 22;">
+</div>
+                </div>
+
+                <div id="current-task-banner" class="task-banner">
+                    目前專注任務：<span id="active-task-name">尚未選擇任務 (點擊待辦清單設定)</span>
+                </div>
+
+                <div id="timer-display" class="timer-display">25:00</div>
+                
+                <div class="control-buttons">
+                    <button id="start-btn" class="btn btn-primary">開始</button>
+                    <button id="reset-btn" class="btn btn-secondary">跳過/重置</button>
+                </div>
+                
+                <div class="settings-panel">
+                    <div class="settings-header">
+                        <h3 class="settings-title">計時設定</h3>
+                        <button class="btn-apply">套用設定</button>
+                    </div>
+                    <div class="settings-cards">
+                        <div class="setting-card">
+                            <div class="setting-label">專注 ( 分 )</div>
+                            <div class="setting-controls">
+                                <button class="circle-btn"><i class="fa-solid fa-minus"></i></button>
+                                <span class="setting-value">25</span>
+                                <button class="circle-btn"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="setting-card">
+                            <div class="setting-label">休息 ( 分 )</div>
+                            <div class="setting-controls">
+                                <button class="circle-btn"><i class="fa-solid fa-minus"></i></button>
+                                <span class="setting-value">5</span>
+                                <button class="circle-btn"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="setting-card">
+                            <div class="setting-label">番茄數</div>
+                            <div class="setting-controls">
+                                <button class="circle-btn"><i class="fa-solid fa-minus"></i></button>
+                                <span class="setting-value">4</span>
+                                <button class="circle-btn"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="sound-toggle-btn" class="sound-floating-btn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="sound-status">鈴聲: 開</span>
+                </button>
+            </div>
+
+            <!-- 頁面 2：待辦清單 -->
+            <div id="page-todo" class="page-section">
+                <div class="todo-wrapper">
+                    <h2 class="section-title">待辦清單</h2>
+                    <div class="todo-input-row">
+                        <input type="text" id="task-input" class="todo-input" placeholder="輸入要專心做的事 (例如: 經濟學)...">
+                        <button id="add-task-btn" class="btn-add"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="task-list" class="todo-list"></ul>
+                </div>
+            </div>
+
+           <!-- 頁面 3：換裝商店 -->
+           <div id="page-shop" class="page-section">
+            <div class="character-panel">
+                <h2 class="section-title">我的角色</h2>
+                <!-- 多圖層 PNG 紙娃預覽框 (嚴格由下到上，每組先 mask 後 line) -->
+                <div class="character-preview-box avatar-layered-container">
+                    <img src="images/avatar/hair_ext_01_mask.png" class="avatar-layer avatar-mask" alt="hair ext mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 1;">
+                    <img src="images/avatar/hair_ext_01_line.png" class="avatar-layer avatar-line" alt="hair ext line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 2;">
+
+                    <img src="images/avatar/body_01_mask.png" class="avatar-layer avatar-mask" alt="body mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 3;">
+                    <img src="images/avatar/body_01_line.png" class="avatar-layer avatar-line" alt="body line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 4;">
+
+                    <img src="images/avatar/hair_back_01_mask.png" class="avatar-layer avatar-mask" alt="hair back mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 5;">
+                    <img src="images/avatar/hair_back_01_line.png" class="avatar-layer avatar-line" alt="hair back line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 6;">
+
+                    <img src="images/avatar/ahoge_01_mask.png" class="avatar-layer avatar-mask" alt="ahoge mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 7;">
+                    <img src="images/avatar/ahoge_01_line.png" class="avatar-layer avatar-line" alt="ahoge line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 8;">
+
+                    <img src="images/avatar/eye01_mask.png" class="avatar-layer avatar-mask" alt="eye mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 9;">
+                    <img src="images/avatar/eye01_line.png" class="avatar-layer avatar-line" alt="eye line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10;">
+                    <img src="images/avatar/mouth_01.png" class="avatar-layer avatar-line" alt="mouth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 11;">
+
+                    <img src="images/avatar/hair_front_01_mask.png" class="avatar-layer avatar-mask" alt="hair front mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 12;">
+                    <img src="images/avatar/hair_front_01_line.png" class="avatar-layer avatar-line" alt="hair front line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 13;">
+
+                    <img src="images/avatar/eyebrow_01.png" class="avatar-layer avatar-line" alt="eyebrow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 14;">
+
+                    <img src="images/avatar/clothes_base_02_mask.png" class="avatar-layer avatar-mask" alt="clothes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 15;">
+                    <img src="images/avatar/clothes_base_02_line.png" class="avatar-layer avatar-line" alt="clothes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 16;">
+
+                    <img src="images/avatar/clothes_outer_01_mask.png" class="avatar-layer avatar-mask" alt="outer mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 17;">
+                    <img src="images/avatar/clothes_outer_01_line.png" class="avatar-layer avatar-line" alt="outer line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 18;">
+
+                    <img src="images/avatar/shoes_01_mask.png" class="avatar-layer avatar-mask" alt="shoes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 19;">
+                    <img src="images/avatar/shoes_01_line.png" class="avatar-layer avatar-line" alt="shoes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 20;">
+                </div>
+                <button id="shop-preview-toggle" class="preview-mode-toggle" type="button" role="switch" aria-checked="false">
+                    <span class="preview-mode-switch" aria-hidden="true"><span></span></span>
+                    <span class="preview-mode-label">預覽模式 <strong id="shop-preview-status">OFF</strong></span>
+                </button>
+            </div>
+
+            <div class="shop-panel">
+                <div class="shop-header">
+                    <h2 class="section-title">換裝商店</h2>
+                    <!-- 擴充分類切換按鈕 -->
+                    <div class="filter-toggle">
+                        <button class="filter-btn active" onclick="filterShopCategory('all')">全部</button>
+                        <button class="filter-btn" onclick="filterShopCategory('hair_ext')">辮髮</button>
+                        <button class="filter-btn" onclick="filterShopCategory('body')">身體</button>
+                        <button class="filter-btn" onclick="filterShopCategory('hair_back')">後髮</button>
+                        <button class="filter-btn" onclick="filterShopCategory('ahoge')">呆毛</button>
+                        <button class="filter-btn" onclick="filterShopCategory('eyes')">眼睛</button>
+                        <button class="filter-btn" onclick="filterShopCategory('mouth')">嘴巴</button>
+                        <button class="filter-btn" onclick="filterShopCategory('hair_front')">瀏海</button>
+                        <button class="filter-btn" onclick="filterShopCategory('eyebrow')">眉毛</button>
+                        <button class="filter-btn" onclick="filterShopCategory('clothes')">衣服</button>
+                        <button class="filter-btn" onclick="filterShopCategory('outer')">外套</button>
+                        <button class="filter-btn" onclick="filterShopCategory('shoes')">鞋子</button>
+                    </div>
+                </div>
+
+                <!-- 網格狀展示區 -->
+                <div class="shop-grid" id="shop-grid-container">
+                    <!-- JS 動態生成商品項目，未選中無框，選中帶有 selected 邊框 -->
+                </div>
+
+                <!-- 調色 UI 區塊 (預設色按鈕 + 放大鏡/調色盤隱藏色票) -->
+                <div class="shop-color-panel">
+                    <div class="preset-colors-row">
+                        <span class="color-panel-label">預設色：</span>
+                        <button class="preset-color-btn" style="background: #F6A36F;" onclick="applyColor('#F6A36F')"></button>
+                        <button class="preset-color-btn" style="background: #abdbe3;" onclick="applyColor('#abdbe3')"></button>
+                        <button class="preset-color-btn" style="background: #c69c6d;" onclick="applyColor('#c69c6d')"></button>
+                        <button class="preset-color-btn" style="background: #ffe7db;" onclick="applyColor('#ffe7db')"></button>
+                        <button class="preset-color-btn" style="background: #754c24;" onclick="applyColor('#754c24')"></button>
+                        <span id="mask-color-target" class="mask-color-target" aria-live="polite"></span>
+                    </div>
+                    <div class="custom-color-picker-box">
+                        <label for="custom-color-input" class="palette-icon-label" title="自訂調色盤">
+                            <i class="fa-solid fa-palette"></i> 自訂色
+                        </label>
+                        <button id="eyedropper-btn" class="eyedropper-btn" type="button" onclick="pickScreenColor()" title="使用滴管吸取螢幕顏色" aria-label="使用滴管吸取螢幕顏色">
+                            <i class="fa-solid fa-eye-dropper"></i>
+                        </button>
+                        <input type="color" id="custom-color-input" oninput="applyColor(this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+           <!-- 頁面 4：收成紀錄 -->
+           <div id="page-achievements" class="page-section">
+            <div class="achievements-wrapper layout-sketch-col">
+                
+                <div class="sketch-content-row">
+                    <!-- 左側大卡片：今日學習與各科明細 -->
+                    <div class="achievement-card sketch-left-card">
+                        <div class="sketch-card-header">
+                            <h3 class="sketch-title-text">今日收成</h3>
+                            <i class="fa-solid fa-basket-shopping sketch-basket-icon"></i>
+                        </div>
+
+                        <div class="sketch-total-display">
+                            <span id="today-hours-val" class="big-number">0</span>
+                            <span class="big-unit">小時</span>
+                            <span id="today-minutes-val" class="big-number">00</span>
+                            <span class="big-unit">分鐘</span>
+                        </div>
+                        
+                        <div class="sketch-divider"></div>
+
+                        <div class="sketch-subtitle-text">各科收成明細</div>
+                        
+                        <ul id="today-subjects-list" class="sketch-subject-list">
+                            <!-- JS 動態生成 -->
+                        </ul>
+                        <div class="harvest-pagination">
+                            <button id="harvest-prev" type="button" aria-label="上一頁">&lt;</button>
+                            <span id="harvest-page-number">0 / 0</span>
+                            <button id="harvest-next" type="button" aria-label="下一頁">&gt;</button>
+                        </div>
+                    </div>
+
+                    <!-- 右側雙卡片區 (上下排布) -->
+                    <div class="sketch-right-col">
+                        <!-- 右上：一週連續學習 (7顆番茄 + 星期標示) -->
+                        <div class="achievement-card sketch-right-top">
+                            <div class="streak-tomatoes" id="streak-tomatoes-container"></div>
+                        </div>
+
+                        <!-- 右下：4週 (28格) 方格熱力田 -->
+                        <div class="achievement-card sketch-right-bottom">
+                            <div class="heatmap-card-header">
+                                <h3 class="sketch-title-text" style="font-size: 18px;">近期耕耘紀錄 (28天)</h3>
+                                <div class="heatmap-controls">
+                                    <div class="heatmap-legend">
+                                        <span class="legend-label">少</span>
+                                        <div class="legend-color level-0"></div>
+                                        <div class="legend-color level-1"></div>
+                                        <div class="legend-color level-2"></div>
+                                        <div class="legend-color level-3"></div>
+                                        <div class="legend-color level-4"></div>
+                                        <span class="legend-label">豐收</span>
+                                    </div>
+                                    <div class="heatmap-pagination">
+                                        <button id="heatmap-prev" type="button" aria-label="上一頁">&lt;</button>
+                                        <span id="heatmap-page-number">0 / 0</span>
+                                        <button id="heatmap-next" type="button" aria-label="下一頁">&gt;</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="heatmap-grid-28" id="heatmap-grid">
+                                <!-- JS 動態生成 28 格 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+    <dialog id="shop-purchase-dialog" class="shop-purchase-dialog" aria-labelledby="shop-purchase-message">
+        <p id="shop-purchase-message" class="shop-purchase-message"></p>
+        <div class="shop-purchase-actions">
+            <button id="shop-purchase-no" class="shop-purchase-button shop-purchase-button-secondary" type="button">否</button>
+            <button id="shop-purchase-yes" class="shop-purchase-button shop-purchase-button-primary" type="button">是</button>
+        </div>
+    </dialog>
+    <script src="tomoto.js"></script>
+    <audio id="alarm-audio" src="running-out-of-time.mp3" preload="auto"></audio>
+</body>
+</html>
