@@ -78,7 +78,7 @@ function deductCoins(amount) {
         updateCoinDisplay();
         return true;
     }
-    alert('金幣不足！');
+    alert('金幣不足，無法購買！');
     return false;
 }
 
@@ -530,6 +530,9 @@ if (soundBtn) {
 // ==========================================
 window.switchPage = function(pageId, event) {
     if (event) event.preventDefault();
+    if (pageId !== 'page-shop' && isShopPreviewMode) {
+        setShopPreviewMode(false);
+    }
     
     document.querySelectorAll('.page-section').forEach(page => {
         page.classList.remove('active');
@@ -747,6 +750,7 @@ function updateTodaysHarvestUI() {
 
     subjectListEl.innerHTML = '';
     const pageEntries = taskEntries.slice(harvestPageIndex * 3, harvestPageIndex * 3 + 3);
+    subjectListEl.classList.toggle('is-empty', pageEntries.length === 0);
     if (pageEntries.length === 0) {
         const emptyItem = document.createElement('li');
         emptyItem.className = 'harvest-empty';
@@ -781,6 +785,7 @@ function updateTodaysHarvestUI() {
             const tomato = document.createElement('span');
             tomato.className = 'harvest-tomato';
             tomato.setAttribute('aria-label', '專注滿10分鐘');
+            tomato.innerHTML = getTomatoSVG(true, 'harvest-tomato-icon');
             tomatoRow.appendChild(tomato);
         }
 
@@ -847,5 +852,424 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTodaysHarvestUI();
             }
         });
+    }
+});
+
+// ==========================================
+// 10. 換裝商店分類、網格展示與動態調色邏輯
+// ==========================================
+let currentShopCategory = 'all';
+const shopColorCategories = ['eyes', 'mouth', 'eyebrow', 'hair_front', 'hair_ext', 'hair_back', 'ahoge', 'body', 'clothes', 'outer', 'shoes'];
+const defaultShopColor = '#FFFFFF';
+const previousDefaultShopColor = '#F6A36F';
+const savedShopColors = JSON.parse(localStorage.getItem('pomodoro_shop_colors') || '{}');
+const shopColors = Object.fromEntries(shopColorCategories.map(category => [
+    category,
+    /^#[0-9a-f]{6}$/i.test(savedShopColors[category] || '')
+        && savedShopColors[category].toLowerCase() !== previousDefaultShopColor.toLowerCase()
+        ? savedShopColors[category]
+        : defaultShopColor
+]));
+let activeColorCategory = 'hair_front';
+let currentShopColor = shopColors[activeColorCategory];
+const selectedShopItems = {
+    eyes: 'eye_1',
+    mouth: 'mouth_1',
+    eyebrow: 'eyebrow_1',
+    hair_front: 'hf_1',
+    hair_ext: 'he_1',
+    hair_back: 'hb_1',
+    ahoge: 'ah_1',
+    body: 'bd_1',
+    clothes: 'cl_1',
+    outer: 'ou_1',
+    shoes: 'sh_1'
+};
+let isShopPreviewMode = false;
+let previewShopItems = { ...selectedShopItems };
+
+const shopItemsData = [
+    // --- 眼睛 (eyes) ---
+    { id: 'eye_1', category: 'eyes', name: '眼睛 01', mask: 'images/avatar/eye01_mask.png', line: 'images/avatar/eye01_line.png' },
+    { id: 'eye_2', category: 'eyes', name: '眼睛 02', mask: 'images/avatar/eye02_mask.png', line: 'images/avatar/eye02_line.png' },
+    { id: 'eye_3', category: 'eyes', name: '眼睛 03', mask: 'images/avatar/eye03_mask.png', line: 'images/avatar/eye03_line.png' },
+
+    // --- 嘴巴 (mouth) ---
+    { id: 'mouth_1', category: 'mouth', name: '嘴巴 01', mask: 'images/avatar/mouth_01.png', line: 'images/avatar/mouth_01.png' },
+    { id: 'mouth_2', category: 'mouth', name: '嘴巴 02', mask: 'images/avatar/mouth_02.png', line: 'images/avatar/mouth_02.png' },
+    { id: 'mouth_3', category: 'mouth', name: '嘴巴 03', mask: 'images/avatar/mouth_03.png', line: 'images/avatar/mouth_03.png' },
+    { id: 'mouth_4', category: 'mouth', name: '嘴巴 04', mask: 'images/avatar/mouth_04.png', line: 'images/avatar/mouth_04.png' },
+
+    // --- 眉毛 (eyebrow) ---
+    { id: 'eyebrow_1', category: 'eyebrow', name: '眉毛 01', mask: 'images/avatar/eyebrow_01.png', line: 'images/avatar/eyebrow_01.png' },
+    { id: 'eyebrow_2', category: 'eyebrow', name: '眉毛 02', mask: 'images/avatar/eyebrow_02.png', line: 'images/avatar/eyebrow_02.png' },
+    { id: 'eyebrow_3', category: 'eyebrow', name: '眉毛 03', mask: 'images/avatar/eyebrow_03_mask.png', line: 'images/avatar/eyebrow_03_line.png' },
+
+    // --- 瀏海 (hair_front) ---
+    { id: 'hf_1', category: 'hair_front', name: '瀏海 01', mask: 'images/avatar/hair_front_01_mask.png', line: 'images/avatar/hair_front_01_line.png' },
+    { id: 'hf_2', category: 'hair_front', name: '瀏海 02', mask: 'images/avatar/hair_front_02_mask.png', line: 'images/avatar/hair_front_02_line.png' },
+    { id: 'hf_3', category: 'hair_front', name: '瀏海 03', mask: 'images/avatar/hair_front_03_mask.png', line: 'images/avatar/hair_front_03_line.png' },
+    { id: 'hf_4', category: 'hair_front', name: '瀏海 04', mask: 'images/avatar/hair_front_04_mask.png', line: 'images/avatar/hair_front_04_line.png' },
+    { id: 'hf_5', category: 'hair_front', name: '瀏海 05', mask: 'images/avatar/hair_front_05_mask.png', line: 'images/avatar/hair_front_05_line.png' },
+    { id: 'hf_6', category: 'hair_front', name: '瀏海 06', mask: 'images/avatar/hair_front_06_mask.png', line: 'images/avatar/hair_front_06_line.png' },
+
+    // --- 辮髮 (hair_ext) ---
+    { id: 'he_1', category: 'hair_ext', name: '辮髮 01', mask: 'images/avatar/hair_ext_01_mask.png', line: 'images/avatar/hair_ext_01_line.png' },
+    { id: 'he_2', category: 'hair_ext', name: '辮髮 02', mask: 'images/avatar/hair_ext_02_mask.png', line: 'images/avatar/hair_ext_02_line.png' },
+    { id: 'he_3', category: 'hair_ext', name: '辮髮 03', mask: 'images/avatar/hair_ext_03_mask.png', line: 'images/avatar/hair_ext_03_line.png' },
+    { id: 'he_4', category: 'hair_ext', name: '辮髮 04', mask: 'images/avatar/hair_ext_04_mask.png', line: 'images/avatar/hair_ext_04_line.png' },
+
+    // --- 後髮 (hair_back) ---
+    { id: 'hb_1', category: 'hair_back', name: '後髮 01', mask: 'images/avatar/hair_back_01_mask.png', line: 'images/avatar/hair_back_01_line.png' },
+    { id: 'hb_2', category: 'hair_back', name: '後髮 02', mask: 'images/avatar/hair_back_02_mask.png', line: 'images/avatar/hair_back_02_line.png' },
+
+    // --- 呆毛 (ahoge) ---
+    { id: 'ah_1', category: 'ahoge', name: '呆毛 01', mask: 'images/avatar/ahoge_01_mask.png', line: 'images/avatar/ahoge_01_mask.png' },
+    { id: 'ah_2', category: 'ahoge', name: '呆毛 02', mask: 'images/avatar/ahoge_02_mask.png', line: 'images/avatar/ahoge_02_line.png' },
+    { id: 'ah_3', category: 'ahoge', name: '呆毛 03', mask: 'images/avatar/ahoge_03_mask.png', line: 'images/avatar/ahoge_03_line.png' },
+
+    // --- 身體 (body) ---
+    { id: 'bd_1', category: 'body', name: '身體 01', mask: 'images/avatar/body_01_mask.png', line: 'images/avatar/body_01_line.png' },
+
+    // --- 衣服 (clothes) ---
+    { id: 'cl_1', category: 'clothes', name: '衣服 01', mask: 'images/avatar/clothes_base_01.png', line: 'images/avatar/clothes_base_01.png' },
+    { id: 'cl_2', category: 'clothes', name: '衣服 02', mask: 'images/avatar/clothes_base_02_mask.png', line: 'images/avatar/clothes_base_02_line.png' },
+    { id: 'cl_3', category: 'clothes', name: '衣服 03', mask: 'images/avatar/clothes_base_03_mask.png', line: 'images/avatar/clothes_base_03_line.png' },
+
+    // --- 外套 (outer) ---
+    { id: 'ou_1', category: 'outer', name: '外套 01', mask: 'images/avatar/clothes_outer_01_mask.png', line: 'images/avatar/clothes_outer_01_line.png' },
+
+    // --- 鞋子 (shoes) ---
+    { id: 'sh_1', category: 'shoes', name: '鞋子 01', mask: 'images/avatar/shoes_01_mask.png', line: 'images/avatar/shoes_01_line.png' }
+];
+
+const shopItemUnlockPrices = {
+    hair_ext: 5,
+    body: 30,
+    hair_back: 5,
+    ahoge: 2,
+    eyes: 5,
+    mouth: 5,
+    hair_front: 5,
+    eyebrow: 2,
+    clothes: 30,
+    outer: 30,
+    shoes: 5
+};
+const defaultUnlockedShopItems = shopItemsData
+    .filter(item => item.name.endsWith('01'))
+    .map(item => item.id);
+const storedUnlockedShopItems = JSON.parse(localStorage.getItem('pomodoro_unlocked_shop_items') || '[]');
+const unlockedShopItems = [...new Set([
+    ...defaultUnlockedShopItems,
+    ...storedUnlockedShopItems.filter(itemId => shopItemsData.some(item => item.id === itemId))
+])];
+localStorage.setItem('pomodoro_unlocked_shop_items', JSON.stringify(unlockedShopItems));
+
+function confirmShopItemPurchase(item) {
+    const dialog = document.getElementById('shop-purchase-dialog');
+    const message = document.getElementById('shop-purchase-message');
+    const confirmButton = document.getElementById('shop-purchase-yes');
+    const cancelButton = document.getElementById('shop-purchase-no');
+    if (!dialog || !message || !confirmButton || !cancelButton) {
+        throw new Error('找不到商店購買確認視窗所需的頁面元素。');
+    }
+
+    message.textContent = `是否購買「${item.name}」？`;
+    return new Promise(resolve => {
+        const handleClose = () => resolve(dialog.returnValue === 'yes');
+        dialog.addEventListener('close', handleClose, { once: true });
+        confirmButton.onclick = () => dialog.close('yes');
+        cancelButton.onclick = () => dialog.close('no');
+        dialog.showModal();
+    });
+}
+
+function renderShopGrid(category = 'all') {
+    const gridContainer = document.getElementById('shop-grid-container');
+    if (!gridContainer) return;
+
+    gridContainer.innerHTML = '';
+    const filteredItems = category === 'all' 
+        ? shopItemsData 
+        : shopItemsData.filter(item => item.category === category);
+
+    if (filteredItems.length === 0) {
+        gridContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 20px;">此分類尚無道具</div>';
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const isSelected = item.id === (isShopPreviewMode
+            ? previewShopItems[item.category]
+            : selectedShopItems[item.category]);
+        const isUnlocked = unlockedShopItems.includes(item.id);
+        const showAsLocked = !isShopPreviewMode && !isUnlocked;
+        const div = document.createElement('div');
+        div.className = `shop-item ${isSelected ? 'selected' : ''} ${showAsLocked ? 'shop-item-locked' : ''}`;
+        div.dataset.category = item.category;
+        const preview = document.createElement('div');
+        preview.className = 'shop-item-preview';
+
+        const maskLayer = document.createElement('div');
+        maskLayer.className = 'shop-thumb-mask';
+        maskLayer.style.backgroundColor = shopColors[item.category];
+        const maskImage = `url("${item.mask}")`;
+        maskLayer.style.maskImage = maskImage;
+        maskLayer.style.setProperty('-webkit-mask-image', maskImage);
+        preview.appendChild(maskLayer);
+
+        const lineLayer = document.createElement('img');
+        lineLayer.src = item.line;
+        lineLayer.className = 'shop-thumb-layer';
+        lineLayer.alt = `${item.name} line`;
+        if (item.mask === item.line) {
+            lineLayer.classList.add('shop-thumb-original');
+        }
+        preview.appendChild(lineLayer);
+        if (showAsLocked) {
+            const lockOverlay = document.createElement('span');
+            lockOverlay.className = 'shop-item-lock-overlay';
+            lockOverlay.setAttribute('aria-label', '尚未解鎖');
+            lockOverlay.innerHTML = '<i class="fa-solid fa-lock" aria-hidden="true"></i>';
+            preview.appendChild(lockOverlay);
+        }
+
+        const itemName = document.createElement('span');
+        itemName.className = 'shop-item-name';
+        itemName.textContent = item.name;
+        div.prepend(preview);
+        div.appendChild(itemName);
+        if (showAsLocked) {
+            const priceLabel = document.createElement('span');
+            priceLabel.className = 'shop-item-price';
+            priceLabel.setAttribute('aria-label', `解鎖需要 ${shopItemUnlockPrices[item.category]} 金幣`);
+            priceLabel.innerHTML = `<i class="fa-solid fa-coins icon-coin" aria-hidden="true"></i><span>${shopItemUnlockPrices[item.category]}</span>`;
+            div.appendChild(priceLabel);
+        }
+        div.onclick = async () => {
+            if (!isShopPreviewMode && !unlockedShopItems.includes(item.id)) {
+                if (!await confirmShopItemPurchase(item)) return;
+                if (!deductCoins(shopItemUnlockPrices[item.category])) return;
+                unlockedShopItems.push(item.id);
+                localStorage.setItem('pomodoro_unlocked_shop_items', JSON.stringify(unlockedShopItems));
+            }
+
+            if (isShopPreviewMode) {
+                previewShopItems[item.category] = item.id;
+            } else {
+                selectedShopItems[item.category] = item.id;
+            }
+            setActiveColorCategory(item.category);
+            const targetContainers = isShopPreviewMode
+                ? document.querySelectorAll('#page-shop .avatar-layered-container')
+                : document.querySelectorAll('.avatar-layered-container');
+            targetContainers.forEach(container => {
+                equipShopItem(container, item);
+            });
+            renderShopGrid(currentShopCategory);
+        };
+        gridContainer.appendChild(div);
+    });
+}
+
+const avatarLayerNames = {
+    hair_ext: { mask: 'hair ext mask', line: 'hair ext line' },
+    body: { mask: 'body mask', line: 'body line' },
+    hair_back: { mask: 'hair back mask', line: 'hair back line' },
+    eyes: { mask: 'eye mask', line: 'eye line' },
+    mouth: { line: 'mouth' },
+    hair_front: { mask: 'hair front mask', line: 'hair front line' },
+    eyebrow: { line: 'eyebrow' },
+    clothes: { mask: 'clothes mask', line: 'clothes line' },
+    outer: { mask: 'outer mask', line: 'outer line' },
+    shoes: { mask: 'shoes mask', line: 'shoes line' }
+};
+
+function setShopPreviewMode(enabled) {
+    if (isShopPreviewMode === enabled) return;
+
+    isShopPreviewMode = enabled;
+    if (enabled) {
+        previewShopItems = { ...selectedShopItems };
+    } else {
+        const shopPreview = document.querySelector('#page-shop .avatar-layered-container');
+        if (shopPreview) {
+            Object.values(selectedShopItems)
+                .map(itemId => shopItemsData.find(item => item.id === itemId))
+                .filter(Boolean)
+                .forEach(item => equipShopItem(shopPreview, item));
+        }
+    }
+
+    const toggle = document.getElementById('shop-preview-toggle');
+    const status = document.getElementById('shop-preview-status');
+    if (toggle) toggle.setAttribute('aria-checked', String(enabled));
+    if (status) status.textContent = enabled ? 'ON' : 'OFF';
+    renderShopGrid(currentShopCategory);
+}
+
+function equipShopItem(container, item) {
+    let maskLayer;
+    let lineLayer;
+
+    if (item.category === 'ahoge') {
+        const masks = [...container.querySelectorAll('img.avatar-mask[alt^="ahoge"]')];
+        const lines = [...container.querySelectorAll('img.avatar-line[alt^="ahoge"]')];
+        maskLayer = masks[0];
+        lineLayer = lines[0];
+        masks.forEach((layer, index) => {
+            layer.style.display = index === 0 ? '' : 'none';
+        });
+        lines.forEach((layer, index) => {
+            layer.style.display = index === 0 ? '' : 'none';
+        });
+    } else {
+        const layerNames = avatarLayerNames[item.category];
+        if (!layerNames) return;
+        if (layerNames.mask) {
+            maskLayer = container.querySelector(`img.avatar-mask[alt="${layerNames.mask}"]`);
+        }
+        lineLayer = container.querySelector(`img.avatar-line[alt="${layerNames.line}"]`);
+    }
+
+    if (!lineLayer) return;
+
+    if (maskLayer) {
+        maskLayer.src = item.mask;
+        maskLayer.style.visibility = 'hidden';
+    }
+
+    let tintLayer = container.querySelector(`.avatar-mask-tint[data-category="${item.category}"]`);
+    if (!tintLayer) {
+        tintLayer = document.createElement('div');
+        tintLayer.className = 'avatar-mask-tint';
+        tintLayer.dataset.category = item.category;
+        container.appendChild(tintLayer);
+    }
+
+    const maskImage = `url("${item.mask}")`;
+    tintLayer.style.maskImage = maskImage;
+    tintLayer.style.setProperty('-webkit-mask-image', maskImage);
+    tintLayer.style.backgroundColor = shopColors[item.category];
+    tintLayer.style.zIndex = maskLayer
+        ? maskLayer.style.zIndex
+        : String(Math.max(0, Number(lineLayer.style.zIndex) - 1));
+
+    lineLayer.src = item.line;
+    lineLayer.style.filter = item.category === 'ahoge' && item.mask === item.line
+        ? 'drop-shadow(1px 0 #8E4849) drop-shadow(-1px 0 #8E4849) drop-shadow(0 1px #8E4849) drop-shadow(0 -1px #8E4849)'
+        : '';
+    lineLayer.style.display = '';
+    lineLayer.classList.toggle('avatar-layer-line-original', item.mask === item.line);
+}
+
+function setActiveColorCategory(category) {
+    if (!shopColorCategories.includes(category)) return;
+
+    activeColorCategory = category;
+    currentShopColor = shopColors[category];
+
+    const colorInput = document.getElementById('custom-color-input');
+    if (colorInput) colorInput.value = currentShopColor;
+
+    const targetLabel = document.getElementById('mask-color-target');
+    if (targetLabel) targetLabel.textContent = `套用至：${getCategoryChineseName(category)}`;
+}
+
+window.filterShopCategory = function(category) {
+    currentShopCategory = category;
+    setActiveColorCategory(category);
+    document.querySelectorAll('.filter-toggle .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(getCategoryChineseName(category))) {
+            btn.classList.add('active');
+        }
+    });
+    renderShopGrid(category);
+};
+
+function getCategoryChineseName(cat) {
+    const map = { 
+        all: '全部', 
+        hair_ext: '辮髮', 
+        body: '身體', 
+        hair_back: '後髮', 
+        ahoge: '呆毛', 
+        eyes: '眼睛', 
+        mouth: '嘴巴', 
+        hair_front: '瀏海', 
+        eyebrow: '眉毛', 
+        clothes: '衣服', 
+        outer: '外套', 
+        shoes: '鞋子' 
+    };
+    return map[cat] || '';
+}
+
+window.applyColor = function(hexColor) {
+    currentShopColor = hexColor;
+    shopColors[activeColorCategory] = hexColor;
+    localStorage.setItem('pomodoro_shop_colors', JSON.stringify(shopColors));
+
+    const shopGrid = document.getElementById('shop-grid-container');
+    if (shopGrid) {
+        shopGrid.querySelectorAll(`.shop-item[data-category="${activeColorCategory}"] .shop-thumb-mask`)
+            .forEach(layer => {
+                layer.style.backgroundColor = hexColor;
+            });
+    }
+
+    document.querySelectorAll(`.avatar-mask-tint[data-category="${activeColorCategory}"]`).forEach(layer => {
+        layer.style.backgroundColor = hexColor;
+    });
+
+    const colorInput = document.getElementById('custom-color-input');
+    if (colorInput && colorInput.value.toLowerCase() !== hexColor.toLowerCase()) {
+        colorInput.value = hexColor;
+    }
+
+};
+
+window.pickScreenColor = async function() {
+    if (typeof window.EyeDropper !== 'function') {
+        return;
+    }
+
+    try {
+        const { sRGBHex } = await new window.EyeDropper().open();
+        window.applyColor(sRGBHex);
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+        }
+
+        console.error('無法使用滴管吸取顏色。', error);
+    }
+};
+
+// 確保網頁載入時自動渲染商店格子
+document.addEventListener('DOMContentLoaded', () => {
+    renderShopGrid('all');
+    setActiveColorCategory(activeColorCategory);
+    const initialItems = Object.values(selectedShopItems)
+        .map(itemId => shopItemsData.find(item => item.id === itemId))
+        .filter(Boolean);
+    document.querySelectorAll('.avatar-layered-container').forEach(container => {
+        initialItems.forEach(item => equipShopItem(container, item));
+    });
+    window.applyColor(currentShopColor);
+
+    const previewToggle = document.getElementById('shop-preview-toggle');
+    if (previewToggle) {
+        previewToggle.addEventListener('click', () => {
+            setShopPreviewMode(!isShopPreviewMode);
+        });
+    }
+
+    const eyedropperButton = document.getElementById('eyedropper-btn');
+    if (eyedropperButton && typeof window.EyeDropper !== 'function') {
+        eyedropperButton.disabled = true;
+        eyedropperButton.title = '此瀏覽器不支援滴管，請使用自訂調色盤滑動選色';
     }
 });
