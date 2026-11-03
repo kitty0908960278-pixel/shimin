@@ -47,52 +47,50 @@
             <!-- 頁面 1：專注計時 -->
             <div id="page-timer" class="page-section active">
                 <div id="avatar-svg-container" class="avatar-box">
-                    <!-- 多圖層 PNG 紙娃容器 (嚴格由下到上，每組先 mask 後 line) -->
+                  <!-- 多圖層 PNG 紙娃容器 (嚴格由下到上，每組先 mask 後 line) -->
 <div class="avatar-layered-container" style="position: relative; width: 100%; height: 100%;">
     <!-- 1. 辮髮 (Hair Ext) -->
-    <img src="images/avatar/hair_ext_01_mask.png" class="avatar-layer avatar-mask" alt="hair ext mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 1;">
-    <img src="images/avatar/hair_ext_01_line.png" class="avatar-layer avatar-line" alt="hair ext line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 2;">
+    <img src="hair_ext_01_mask.png" class="avatar-layer avatar-mask" alt="hair ext mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 1;">
+    <img src="hair_ext_01_line.png" class="avatar-layer avatar-line" alt="hair ext line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 2;">
 
     <!-- 2. 身體 (Body) -->
-    <img src="images/avatar/body_01_mask.png" class="avatar-layer avatar-mask" alt="body mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 3;">
-    <img src="images/avatar/body_01_line.png" class="avatar-layer avatar-line" alt="body line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 4;">
+    <img src="body_01_mask.png" class="avatar-layer avatar-mask" alt="body mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 3;">
+    <img src="body_01_line.png" class="avatar-layer avatar-line" alt="body line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 4;">
 
     <!-- 3. 後發 (Hair Back) -->
-    <img src="images/avatar/hair_back_01_mask.png" class="avatar-layer avatar-mask" alt="hair back mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 5;">
-    <img src="images/avatar/hair_back_01_line.png" class="avatar-layer avatar-line" alt="hair back line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 6;">
+    <img src="hair_back_01_mask.png" class="avatar-layer avatar-mask" alt="hair back mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 5;">
+    <img src="hair_back_01_line.png" class="avatar-layer avatar-line" alt="hair back line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 6;">
 
     <!-- 4. 呆毛 (Ahoge 02、03) -->
-    <img src="images/avatar/ahoge_02_mask.png" class="avatar-layer avatar-mask" alt="ahoge 02 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 7;">
-    <img src="images/avatar/ahoge_02_line.png" class="avatar-layer avatar-line" alt="ahoge 02 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 8;">
-    <img src="images/avatar/ahoge_03_mask.png" class="avatar-layer avatar-mask" alt="ahoge 03 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 9;">
-    <img src="images/avatar/ahoge_03_line.png" class="avatar-layer avatar-line" alt="ahoge 03 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10;">
+    <img src="ahoge_02_mask.png" class="avatar-layer avatar-mask" alt="ahoge 02 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 7;">
+    <img src="ahoge_02_line.png" class="avatar-layer avatar-line" alt="ahoge 02 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 8;">
+    <img src="ahoge_03_mask.png" class="avatar-layer avatar-mask" alt="ahoge 03 mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 9;">
+    <img src="ahoge_03_line.png" class="avatar-layer avatar-line" alt="ahoge 03 line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 10;">
 
     <!-- 5. 五官：眼睛與嘴巴 (在瀏海後方) -->
-    <img src="images/avatar/eye01_mask.png" class="avatar-layer avatar-mask" alt="eye mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 11;">
-    <img src="images/avatar/eye01_line.png" class="avatar-layer avatar-line" alt="eye line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 12;">
-    <img src="images/avatar/mouth_01.png" class="avatar-layer avatar-line" alt="mouth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 13;">
+    <img src="eye01_mask.png" class="avatar-layer avatar-mask" alt="eye mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 11;">
+    <img src="eye01_line.png" class="avatar-layer avatar-line" alt="eye line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 12;">
+    <img src="mouth_01.png" class="avatar-layer avatar-line" alt="mouth" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 13;">
 
     <!-- 6. 瀏海 (Hair Front) -->
-    <img src="images/avatar/hair_front_01_mask.png" class="avatar-layer avatar-mask" alt="hair front mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 14;">
-    <img src="images/avatar/hair_front_01_line.png" class="avatar-layer avatar-line" alt="hair front line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 15;">
+    <img src="hair_front_01_mask.png" class="avatar-layer avatar-mask" alt="hair front mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 14;">
+    <img src="hair_front_01_line.png" class="avatar-layer avatar-line" alt="hair front line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 15;">
 
     <!-- 7. 眉毛 (調整到瀏海的前面) -->
-    <img src="images/avatar/eyebrow_01.png" class="avatar-layer avatar-line" alt="eyebrow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 16;">
+    <img src="eyebrow_01.png" class="avatar-layer avatar-line" alt="eyebrow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 16;">
 
     <!-- 8. 衣服 (Clothes Base) -->
-    <img src="images/avatar/clothes_base_02_mask.png" class="avatar-layer avatar-mask" alt="clothes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 17;">
-    <img src="images/avatar/clothes_base_02_line.png" class="avatar-layer avatar-line" alt="clothes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 18;">
+    <img src="clothes_base_02_mask.png" class="avatar-layer avatar-mask" alt="clothes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 17;">
+    <img src="clothes_base_02_line.png" class="avatar-layer avatar-line" alt="clothes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 18;">
 
     <!-- 9. 外套 (Clothes Outer) -->
-    <img src="images/avatar/clothes_outer_01_mask.png" class="avatar-layer avatar-mask" alt="outer mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 19;">
-    <img src="images/avatar/clothes_outer_01_line.png" class="avatar-layer avatar-line" alt="outer line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 20;">
+    <img src="clothes_outer_01_mask.png" class="avatar-layer avatar-mask" alt="outer mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 19;">
+    <img src="clothes_outer_01_line.png" class="avatar-layer avatar-line" alt="outer line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 20;">
 
     <!-- 10. 鞋子 (Shoes) -->
-    <img src="images/avatar/shoes_01_mask.png" class="avatar-layer avatar-mask" alt="shoes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 21;">
-    <img src="images/avatar/shoes_01_line.png" class="avatar-layer avatar-line" alt="shoes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 22;">
+    <img src="shoes_01_mask.png" class="avatar-layer avatar-mask" alt="shoes mask" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 21;">
+    <img src="shoes_01_line.png" class="avatar-layer avatar-line" alt="shoes line" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; z-index: 22;">
 </div>
-                </div>
-
                 <div id="current-task-banner" class="task-banner">
                     目前專注任務：<span id="active-task-name">尚未選擇任務 (點擊待辦清單設定)</span>
                 </div>
